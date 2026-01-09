@@ -1,8 +1,10 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
 import { api } from "@/server/client";
 import { router } from "expo-router";
+import { CourseItem } from "@/components/course-item";
+import { Header, Screen } from "@/components";
 
 export default function Page() {
 
@@ -17,19 +19,26 @@ export default function Page() {
     </View>
   )
   return (
-    <View className="flex-1 flex flex-col items-stretch pt-7 gap-2 px-5">
-      {data?.map(courses => (
-        <Pressable key={courses.id} onPress={() => router.push(`/courses/${courses.id}/units`)} className="bg-white rounded-md p-4 active:bg-green-100">
-          <Text className="text-green-900 font-semibold">
-            {courses.name}
-          </Text>
-        </Pressable>
-      ))}
-      {!data?.length && (
-        <Text>
-          No courses available
-        </Text> 
-      )}
-    </View>
+    <Screen
+      header={<Header title="Available Courses" />}
+    >
+      <ScrollView
+        className="flex flex-1"
+        contentContainerClassName="flex flex-col items-stretch px-5 gap-2 py-10"
+      >
+        {data?.map(course => (
+          <CourseItem
+            onPress={() => router.push(`/courses/${course.id}/units`)}
+            course={course}
+            key={course.id}
+          />
+        ))}
+        {!data?.length && (
+          <Text>
+            No courses available
+          </Text> 
+        )}
+      </ScrollView>
+    </Screen>
   );
 }
