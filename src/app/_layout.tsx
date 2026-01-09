@@ -1,5 +1,5 @@
 import "../global.css";
-import { Slot } from "expo-router";
+import { Slot, Stack } from "expo-router";
 
 import { View } from "react-native";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -11,7 +11,12 @@ export default function Layout() {
   return (
     <QueryClientProvider client={queryClient}>
       <View className="flex flex-1 bg-green-400 flex-col items-stretch">
-        <Slot />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+        </Stack>
       </View>
     </QueryClientProvider>
   );

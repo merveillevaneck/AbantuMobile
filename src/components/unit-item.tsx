@@ -1,12 +1,17 @@
 import { Pressable, Text, View } from "react-native"
 import { cn } from '@/tw/util';
 import { components, paths } from "@/server/schema";
+import { ProgressBar } from "./progress-bar";
 
 
 type Unit = paths['/api/units/{id}']['get']['responses'][200]['content']['application/json'];
 export type UnitItemProps = {
     className?: string;
     unit: Unit;
+    /**
+     * The progress of the unit, between 0 and 1. If provided, the progress bar will be displayed.
+     */
+    progress?: number;
     onPress?: ((course?: Unit) => void) | (() => void)
 }
 
@@ -15,6 +20,7 @@ export const UnitItem = (props: UnitItemProps) => {
         className,
         unit,
         onPress: $onPress,
+        progress,
     } = props;
 
     const onPress = () => {
@@ -31,12 +37,17 @@ export const UnitItem = (props: UnitItemProps) => {
             }
 
         >
-            <View className="flex flex-row items-center justify-between">
-                <View className="flex flex-row gap-2 items-center">
+            <View className="flex flex-row items-start justify-between">
+                <View className="flex flex-col gap-2 items-center">
                     <Text className="text-green-900 font-semibold">{unit.name}</Text>
                     <Tag text={"level " + unit.level} />
-
                 </View>
+                {progress &&
+                    <View className="flex flex-row flex-1">
+                        <ProgressBar progress={progress} className="flex-1" />
+                    </View>
+                }
+
             </View>
             <View className="my-2 h-1 border-b border-green-900"></View>
             <Text className="text-xs text-green-900">
