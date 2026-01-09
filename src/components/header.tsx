@@ -25,7 +25,7 @@ export const Header = (props: HeaderProps) => {
             )}>
                 {backTrigger ? (
                     backTrigger
-                ) : (
+                ) : onBack && (
                     <Pressable 
                         className="rounded-tr-md active:bg-green-700 flex items-center justify-center"
                         onPress={onBack}
