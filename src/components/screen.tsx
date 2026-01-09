@@ -13,6 +13,7 @@ export const Screen = (props: ScreenProps) => {
         header,
         className,
         containerClassName,
+        children,
     } = props;
 
     return (
@@ -23,14 +24,14 @@ export const Screen = (props: ScreenProps) => {
                 className
             )}
         >
-            {!!header && header}
+            {header}
             <View
                 className={cn(
-                    "flex flex-1 items-stretch flex-col",
+                    "flex flex-1 items-stretch flex-col p-4",
                     containerClassName
                 )}
             >
-                {props.children}
+                {children}
             </View>
         </View>
     )

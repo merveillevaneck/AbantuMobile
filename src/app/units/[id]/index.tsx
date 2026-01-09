@@ -1,8 +1,12 @@
-import { Screen } from "@/components";
+import { PracticeSessionHeader, Screen } from "@/components";
 import { Header } from "@/components/header";
 import { api } from "@/server/client";
+import { paths } from "@/server/schema";
 import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
+
+type Exercise = paths['/api/units/{id}/exercises']['get']['responses'][200]['content']['application/json'][number];
 
 export default function Page() {
 
@@ -26,25 +30,25 @@ export default function Page() {
         }
     )
 
-    if (isPending) {
+    const [exercise, setExercise] = useState<Exercise | null>(null);
+
+    useEffect(() => {
+        if (data?.[0]) {
+            setExercise(data[0]);
+        } 
+    }, [data])
+
+    if (isPending && !exercise) {
         return (
             <View className="flex-1 pt-10 pb-5 flex flex-col items-center justify-center gap-2">
                 <Text className="text-green-900">Loading...</Text>
             </View>
         )
     }
+
     return (
-        <Screen header={<Header onBack={() => router.back()} title={unit.name} />} >
-            {data?.map(exercise => (
-                <Pressable
-                    key={exercise.id}
-                    className="bg-white rounded-md p-4 active:bg-green-100"
-                >
-                  <Text className="text-green-900 font-semibold">
-                    {exercise.question}
-                  </Text>
-                </Pressable>
-            ))}
+        <Screen header={<PracticeSessionHeader progress={0.5} onBack={() => router.back()} title={unit.name} />} >
+            <Text className="text-green-900 font-semibold">{exercise?.question}</Text>
         </Screen>
     )
 }

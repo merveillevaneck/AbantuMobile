@@ -51,7 +51,7 @@ export default function Page() {
             contentContainerClassName="flex flex-col items-stretch px-5 gap-2 py-10"
         >
             {data?.map(unit => (
-              <UnitItem key={unit.id} unit={unit} />
+              <UnitItem key={unit.id} unit={unit} onPress={() => router.push(`/units/${unit.id}`)} />
             ))}
             {!data?.length && (
               <Text>
