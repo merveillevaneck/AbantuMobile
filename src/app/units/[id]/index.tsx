@@ -1,3 +1,4 @@
+import { Screen } from "@/components";
 import { Header } from "@/components/header";
 import { api } from "@/server/client";
 import { router, useLocalSearchParams } from "expo-router";
@@ -6,6 +7,13 @@ import { Pressable, Text, View } from "react-native";
 export default function Page() {
 
     const { id } = useLocalSearchParams<{id: string}>();
+    const { data: unit, } = api.useQuery(
+        'get',
+        '/api/units/{id}',
+        {
+            params: { path: { id }}
+        }
+    )
     const { data, isPending } = api.useQuery(
         'get',
         '/api/units/{id}/exercises',
@@ -26,8 +34,7 @@ export default function Page() {
         )
     }
     return (
-        <View className="flex-1 pt-10 pb-5 flex flex-col items-stretch gap-2 px-5">
-            <Header />
+        <Screen header={<Header onBack={() => router.back()} title={unit.name} />} >
             {data?.map(exercise => (
                 <Pressable
                     key={exercise.id}
@@ -38,6 +45,6 @@ export default function Page() {
                   </Text>
                 </Pressable>
             ))}
-        </View>
+        </Screen>
     )
 }
