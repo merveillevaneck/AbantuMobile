@@ -2,6 +2,8 @@ import { ComponentProps } from "react";
 import { Pressable } from "react-native";
 import * as Haptics from 'expo-haptics';
 
+export const HapticStyle = Haptics.ImpactFeedbackStyle;
+
 export type HapticPressableProps = ComponentProps<typeof Pressable> & {
     hapticEnabled?: boolean;
     hapticStyle?: Haptics.ImpactFeedbackStyle;

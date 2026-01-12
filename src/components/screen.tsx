@@ -19,7 +19,7 @@ export const Screen = (props: ScreenProps) => {
     return (
         <View
             className={cn(
-                "flex-1 flex flex-col items-stretch gap-2",
+                "flex-1 flex flex-col items-stretch gap-2 bg-[#232427]",
                 !header ? "pt-16" : "",
                 className
             )}

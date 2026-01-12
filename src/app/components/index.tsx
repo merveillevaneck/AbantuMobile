@@ -1,4 +1,5 @@
 import { CourseItem, Header, Pill, PracticeSessionHeader, Screen, UnitItem } from "@/components";
+import { Button } from "@/components/button";
 import { router } from "expo-router";
 import { Text, View } from "react-native";
 
@@ -10,15 +11,12 @@ export default function Components() {
         >
             <Text className="text-xl font-semibold">Pill</Text>
             <View className="flex flex-row gap-2">
-                <Pill>
-                    <Text>Hello</Text>
-                </Pill>
-                <Pill>
-                    <Text>There</Text>
-                </Pill>
+                <Pill text="An" />
+                <Pill text="Option" />
             </View>
             <Text className="text-xl font-semibold">Unit Item</Text>
             <UnitItem
+                action={<Button text="Practice" onPress={() => alert("start practice session")} />}
                 unit={{
                     id: 1,
                     name: "Unit 1",
@@ -46,15 +44,12 @@ export default function Components() {
                     language: "English",
                     status: undefined,
                     units: [],
-                    creator: undefined,
                 }}
             />
             <Text className="text-xl font-semibold">Practice Session Header</Text>
             <PracticeSessionHeader
                 progress={0.5}
-                title="Unit 1"
-                className="rounded-t-[50px]"
-                onBack={() => console.log("back")}
+                onBack={() => alert("ending practice session")}
             />
         </Screen>
     )

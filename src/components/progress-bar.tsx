@@ -13,8 +13,8 @@ export const ProgressBar = (props: ProgressBarProps) => {
     const { progress, className } = props;
 
     return (
-        <View className={cn("h-3 flex flex-row border rounded-full overflow-hidden", className)}>
-            <View className="h-full rounded-full left-0 top-0 absolute transition-all duration-300" style={{ width: `${progress * 100}%`, backgroundColor: "#b9f8cf" }} />
+        <View className={cn("h-3 flex flex-row rounded-full overflow-hidden bg-[#257560]", className)}>
+            <View className="h-full rounded-full left-0 top-0 absolute transition-all duration-300" style={{ width: `${progress * 100}%`, backgroundColor: "#BAFFCA" }} />
         </View>
     )
 }

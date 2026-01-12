@@ -1,24 +1,23 @@
 import "../global.css";
-import { Slot, Stack } from "expo-router";
+import { KeyboardProvider } from "react-native-keyboard-controller";
+
 
 import { View } from "react-native";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Slot } from "expo-router";
 
 const queryClient = new QueryClient()
 
-export default function Layout() {
+export default function Layout(props: {children: React.ReactNode}) {
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <View className="flex flex-1 bg-green-400 flex-col items-stretch">
-        <Stack
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-        </Stack>
-      </View>
-    </QueryClientProvider>
+    <KeyboardProvider>
+      <QueryClientProvider client={queryClient}>
+        <View className="flex flex-1 flex-col items-stretch">
+          <Slot />
+        </View>
+      </QueryClientProvider>
+    </KeyboardProvider>
   );
 }
 
