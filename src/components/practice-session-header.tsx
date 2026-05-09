@@ -7,7 +7,7 @@ import { View } from "react-native";
 import { FontAwesome6 } from '@expo/vector-icons'
 
 type PracticeSessionHeaderProps = {
-    progress: number;
+    progress?: number;
     onBack?: () => void;
     className?: string;
     hapticStyle?: typeof HapticStyle
@@ -19,7 +19,7 @@ export const PracticeSessionHeader = (props: PracticeSessionHeaderProps) => {
     return (
         <View
             className={cn(
-                "flex flex-row px-5 items-center bg-[#232427] py-4 gap-4",
+                "flex flex-row px-5 items-center bg-[#232427] py-4 gap-16 mt-16 pr-15",
                 className,
             )}
         >
@@ -30,7 +30,7 @@ export const PracticeSessionHeader = (props: PracticeSessionHeaderProps) => {
             >
                 <FontAwesome6 name="x" color="white" size={24} />
             </HapticPressable>
-            <ProgressBar progress={progress} />
+            {progress !== undefined && <ProgressBar className="flex-1" progress={progress} />}
         </View>
     )
 }

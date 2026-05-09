@@ -8,6 +8,8 @@ import { Button } from "@/components/button";
 import { useTokenStore } from "@/store/token";
 import { AntDesign, FontAwesome } from "@expo/vector-icons";
 import { MyCoursesDisplay } from "@/components/my-courses-display";
+import { useQuery } from "@tanstack/react-query";
+import { getMyCourses, myCoursesKey } from "@/server/get-my-courses";
 
 const navigateToAvailableCourses = () => {
   router.push("/courses");
@@ -20,10 +22,15 @@ const navigateToLogin = () => {
 export default function Page() {
 
 
-  const { data, isPending, error } = useGetApiStudentCourses();
+  const { data, isPending, error } = useQuery({
+    queryKey: myCoursesKey,
+    queryFn: getMyCourses,
+  });
+
+  // const { data, isPending, error } = useGetApiStudentCourses();
   const { clear } = useTokenStore();
 
-  console.log('error', JSON.stringify(error, null, 2))
+
 
   if (isPending) return (
     <Screen

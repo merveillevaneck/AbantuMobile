@@ -3,12 +3,30 @@ import { z } from "zod";
 
 const postApiunitsIdexercises_Body = z.array(
   z.object({
-    questionType: z.string().optional(),
-    question: z.string(),
-    options: z.array(z.string()),
+    correctMessage: z.union([z.string(), z.null()]).optional(),
+    incorrectMessage: z.union([z.string(), z.null()]).optional(),
+    questionContent: z.string().optional(),
     answers: z
-      .union([z.array(z.union([z.array(z.string()), z.string()])), z.null()])
+      .union([
+        z.array(
+          z
+            .object({
+              text: z.union([
+                z.union([z.array(z.string()), z.string()]),
+                z.null(),
+              ]),
+              audio: z.union([z.string(), z.null()]),
+            })
+            .partial()
+        ),
+        z.null(),
+      ])
       .optional(),
+    options: z.array(z.string()),
+    audio: z.union([z.string(), z.null()]).optional(),
+    courseId: z.number().int().optional(),
+    instruction: z.string(),
+    answerType: z.enum(["freetext", "bubbles"]).optional(),
   })
 );
 const postApiauthlogin_Body = z.object({
@@ -25,6 +43,7 @@ const postApicoursesIdunits_Body = z.array(
   z.object({
     name: z.string(),
     description: z.string(),
+    type: z.enum(["lesson", "practice"]),
     level: z.number().int(),
   })
 );
@@ -33,6 +52,7 @@ const postApicoursesId_Body = z
     name: z.union([z.string(), z.null()]),
     language: z.union([z.string(), z.null()]),
     status: z.union([z.string(), z.null()]),
+    description: z.union([z.string(), z.null()]),
     creatorId: z.union([z.number(), z.null()]),
   })
   .partial();
@@ -55,33 +75,62 @@ const postApivocab_Body = z.array(
     type: z.string(),
   })
 );
+const postApistudentsessionendId_Body = z.object({
+  sessionId: z.number().int().optional(),
+  answers: z.array(
+    z.object({
+      exerciseId: z.number().int().optional(),
+      answer: z.union([z.array(z.string()), z.string()]),
+      startedAt: z.string().optional(),
+      endedAt: z.string().optional(),
+    })
+  ),
+});
 const postApiunitsId_Body = z
   .object({
     id: z.number().int(),
+    courseId: z.number().int(),
     name: z.string(),
     description: z.string(),
+    type: z.enum(["lesson", "practice"]),
     level: z.number().int(),
   })
   .partial();
 const postApiexercisesId_Body = z
   .object({
-    unitId: z.union([z.number(), z.null()]),
-    questionType: z.union([z.string(), z.null()]),
-    question: z.union([z.string(), z.null()]),
-    options: z.union([z.array(z.string()), z.null()]),
+    correctMessage: z.union([z.string(), z.null()]),
+    incorrectMessage: z.union([z.string(), z.null()]),
+    questionContent: z.union([z.string(), z.null()]),
     answers: z.union([
-      z.array(z.union([z.array(z.string()), z.string()])),
+      z.array(
+        z
+          .object({
+            text: z.union([
+              z.union([z.array(z.string()), z.string()]),
+              z.null(),
+            ]),
+            audio: z.union([z.string(), z.null()]),
+          })
+          .partial()
+      ),
       z.null(),
     ]),
+    options: z.union([z.array(z.string()), z.null()]),
+    unitId: z.union([z.number(), z.null()]),
+    audio: z.union([z.string(), z.null()]),
+    instruction: z.union([z.string(), z.null()]),
+    answerType: z.union([z.enum(["freetext", "bubbles"]), z.null()]),
   })
   .partial();
 const postApicourses_Body = z.object({
   name: z.string(),
   language: z.string(),
+  description: z.union([z.string(), z.null()]).optional(),
   units: z.array(
     z.object({
       name: z.string(),
       description: z.string(),
+      type: z.enum(["lesson", "practice"]),
       level: z.number().int(),
     })
   ),
@@ -96,6 +145,7 @@ export const schemas = {
   postApivocabId_Body,
   type,
   postApivocab_Body,
+  postApistudentsessionendId_Body,
   postApiunitsId_Body,
   postApiexercisesId_Body,
   postApicourses_Body,
@@ -128,6 +178,22 @@ const endpoints = makeApi([
         }),
       },
     ],
+  },
+  {
+    method: "get",
+    path: "/api/auth/jag",
+    alias: "getApiauthjag",
+    requestFormat: "json",
+    response: z.object({
+      id: z.number().int(),
+      email: z.string(),
+      firstname: z.union([z.string(), z.null()]).optional(),
+      lastname: z.union([z.string(), z.null()]).optional(),
+      emailVerified: z.boolean().optional(),
+      mobile: z.union([z.string(), z.null()]).optional(),
+      profileImage: z.union([z.string(), z.null()]).optional(),
+      role: z.string(),
+    }),
   },
   {
     method: "post",
@@ -199,6 +265,7 @@ const endpoints = makeApi([
         id: z.number().int(),
         name: z.string(),
         language: z.string(),
+        description: z.union([z.string(), z.null()]).optional(),
         status: z.string(),
         creator: z
           .union([
@@ -218,10 +285,11 @@ const endpoints = makeApi([
         units: z.array(
           z.object({
             id: z.number().int(),
+            courseId: z.number().int().optional(),
             name: z.string(),
             description: z.string(),
+            type: z.enum(["lesson", "practice"]),
             level: z.number().int(),
-            creatorId: z.number().int().optional(),
           })
         ),
       })
@@ -243,19 +311,19 @@ const endpoints = makeApi([
       id: z.number().int(),
       name: z.string(),
       language: z.string(),
+      description: z.union([z.string(), z.null()]).optional(),
       status: z.string(),
       creator: z
         .union([
           z.object({
-            role: z.string(),
+            id: z.number().int(),
             email: z.string(),
-            profileImage: z.union([z.string(), z.null()]).optional(),
+            firstname: z.union([z.string(), z.null()]).optional(),
             lastname: z.union([z.string(), z.null()]).optional(),
             emailVerified: z.boolean().optional(),
-            firstname: z.union([z.string(), z.null()]).optional(),
-            id: z.number().int(),
             mobile: z.union([z.string(), z.null()]).optional(),
-            onboarded: z.boolean(),
+            profileImage: z.union([z.string(), z.null()]).optional(),
+            role: z.string(),
           }),
           z.null(),
         ])
@@ -263,10 +331,11 @@ const endpoints = makeApi([
       units: z.array(
         z.object({
           id: z.number().int(),
+          courseId: z.number().int().optional(),
           name: z.string(),
           description: z.string(),
+          type: z.enum(["lesson", "practice"]),
           level: z.number().int(),
-          creatorId: z.number().int().optional(),
         })
       ),
     }),
@@ -293,19 +362,19 @@ const endpoints = makeApi([
       id: z.number().int(),
       name: z.string(),
       language: z.string(),
+      description: z.union([z.string(), z.null()]).optional(),
       status: z.string(),
       creator: z
         .union([
           z.object({
-            role: z.string(),
+            id: z.number().int(),
             email: z.string(),
-            profileImage: z.union([z.string(), z.null()]).optional(),
+            firstname: z.union([z.string(), z.null()]).optional(),
             lastname: z.union([z.string(), z.null()]).optional(),
             emailVerified: z.boolean().optional(),
-            firstname: z.union([z.string(), z.null()]).optional(),
-            id: z.number().int(),
             mobile: z.union([z.string(), z.null()]).optional(),
-            onboarded: z.boolean(),
+            profileImage: z.union([z.string(), z.null()]).optional(),
+            role: z.string(),
           }),
           z.null(),
         ])
@@ -313,10 +382,11 @@ const endpoints = makeApi([
       units: z.array(
         z.object({
           id: z.number().int(),
+          courseId: z.number().int().optional(),
           name: z.string(),
           description: z.string(),
+          type: z.enum(["lesson", "practice"]),
           level: z.number().int(),
-          creatorId: z.number().int().optional(),
         })
       ),
     }),
@@ -348,19 +418,19 @@ const endpoints = makeApi([
       id: z.number().int(),
       name: z.string(),
       language: z.string(),
+      description: z.union([z.string(), z.null()]).optional(),
       status: z.string(),
       creator: z
         .union([
           z.object({
-            role: z.string(),
+            id: z.number().int(),
             email: z.string(),
-            profileImage: z.union([z.string(), z.null()]).optional(),
+            firstname: z.union([z.string(), z.null()]).optional(),
             lastname: z.union([z.string(), z.null()]).optional(),
             emailVerified: z.boolean().optional(),
-            firstname: z.union([z.string(), z.null()]).optional(),
-            id: z.number().int(),
             mobile: z.union([z.string(), z.null()]).optional(),
-            onboarded: z.boolean(),
+            profileImage: z.union([z.string(), z.null()]).optional(),
+            role: z.string(),
           }),
           z.null(),
         ])
@@ -368,10 +438,11 @@ const endpoints = makeApi([
       units: z.array(
         z.object({
           id: z.number().int(),
+          courseId: z.number().int().optional(),
           name: z.string(),
           description: z.string(),
+          type: z.enum(["lesson", "practice"]),
           level: z.number().int(),
-          creatorId: z.number().int().optional(),
         })
       ),
     }),
@@ -408,6 +479,26 @@ const endpoints = makeApi([
   },
   {
     method: "get",
+    path: "/api/courses/:id/instructions",
+    alias: "getApicoursesIdinstructions",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "id",
+        type: "Path",
+        schema: z.number().int(),
+      },
+    ],
+    response: z.array(z.string()),
+    errors: [
+      {
+        status: 400,
+        schema: z.object({ message: z.string() }),
+      },
+    ],
+  },
+  {
+    method: "get",
     path: "/api/courses/:id/units",
     alias: "getApicoursesIdunits",
     requestFormat: "json",
@@ -421,10 +512,11 @@ const endpoints = makeApi([
     response: z.array(
       z.object({
         id: z.number().int(),
+        courseId: z.number().int().optional(),
         name: z.string(),
         description: z.string(),
+        type: z.enum(["lesson", "practice"]),
         level: z.number().int(),
-        creatorId: z.number().int().optional(),
       })
     ),
     errors: [
@@ -452,11 +544,17 @@ const endpoints = makeApi([
       },
     ],
     response: z.object({
-      id: z.number().int(),
-      name: z.string(),
-      description: z.string(),
-      level: z.number().int(),
-      creatorId: z.number().int().optional(),
+      message: z.string(),
+      data: z.array(
+        z.object({
+          id: z.number().int(),
+          courseId: z.number().int().optional(),
+          name: z.string(),
+          description: z.string(),
+          type: z.enum(["lesson", "practice"]),
+          level: z.number().int(),
+        })
+      ),
     }),
     errors: [
       {
@@ -478,12 +576,26 @@ const endpoints = makeApi([
       },
     ],
     response: z.object({
+      correctMessage: z.union([z.string(), z.null()]).optional(),
+      incorrectMessage: z.union([z.string(), z.null()]).optional(),
+      questionContent: z.string().optional(),
       id: z.number().int(),
-      unitId: z.number().int().optional(),
-      questionType: z.string().optional(),
-      question: z.string(),
+      answers: z.array(
+        z
+          .object({
+            text: z.union([
+              z.union([z.array(z.string()), z.string()]),
+              z.null(),
+            ]),
+            audio: z.union([z.string(), z.null()]),
+          })
+          .partial()
+      ),
       options: z.array(z.string()),
-      answers: z.array(z.union([z.array(z.string()), z.string()])),
+      unitId: z.number().int().optional(),
+      audio: z.union([z.string(), z.null()]).optional(),
+      instruction: z.string(),
+      answerType: z.enum(["freetext", "bubbles"]).optional(),
     }),
     errors: [
       {
@@ -510,12 +622,26 @@ const endpoints = makeApi([
       },
     ],
     response: z.object({
+      correctMessage: z.union([z.string(), z.null()]).optional(),
+      incorrectMessage: z.union([z.string(), z.null()]).optional(),
+      questionContent: z.string().optional(),
       id: z.number().int(),
-      unitId: z.number().int().optional(),
-      questionType: z.string().optional(),
-      question: z.string(),
+      answers: z.array(
+        z
+          .object({
+            text: z.union([
+              z.union([z.array(z.string()), z.string()]),
+              z.null(),
+            ]),
+            audio: z.union([z.string(), z.null()]),
+          })
+          .partial()
+      ),
       options: z.array(z.string()),
-      answers: z.array(z.union([z.array(z.string()), z.string()])),
+      unitId: z.number().int().optional(),
+      audio: z.union([z.string(), z.null()]).optional(),
+      instruction: z.string(),
+      answerType: z.enum(["freetext", "bubbles"]).optional(),
     }),
     errors: [
       {
@@ -554,6 +680,7 @@ const endpoints = makeApi([
         id: z.number().int(),
         name: z.string(),
         language: z.string(),
+        description: z.union([z.string(), z.null()]).optional(),
         status: z.string(),
         creator: z
           .union([
@@ -573,10 +700,11 @@ const endpoints = makeApi([
         units: z.array(
           z.object({
             id: z.number().int(),
+            courseId: z.number().int().optional(),
             name: z.string(),
             description: z.string(),
+            type: z.enum(["lesson", "practice"]),
             level: z.number().int(),
-            creatorId: z.number().int().optional(),
           })
         ),
       })
@@ -598,6 +726,7 @@ const endpoints = makeApi([
       id: z.number().int(),
       name: z.string(),
       language: z.string(),
+      description: z.union([z.string(), z.null()]).optional(),
       status: z.string(),
       creator: z
         .union([
@@ -617,10 +746,11 @@ const endpoints = makeApi([
       units: z.array(
         z.object({
           id: z.number().int(),
+          courseId: z.number().int().optional(),
           name: z.string(),
           description: z.string(),
+          type: z.enum(["lesson", "practice"]),
           level: z.number().int(),
-          creatorId: z.number().int().optional(),
         })
       ),
     }),
@@ -630,6 +760,158 @@ const endpoints = makeApi([
         schema: z.object({ message: z.string() }),
       },
     ],
+  },
+  {
+    method: "post",
+    path: "/api/student/courses/:id",
+    alias: "postApistudentcoursesId",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "id",
+        type: "Path",
+        schema: z.number().int(),
+      },
+    ],
+    response: z.object({ message: z.string() }),
+    errors: [
+      {
+        status: 400,
+        schema: z.object({ message: z.string() }),
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/student/courses/:id",
+    alias: "deleteApistudentcoursesId",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "id",
+        type: "Path",
+        schema: z.number().int(),
+      },
+    ],
+    response: z.object({ message: z.string() }),
+    errors: [
+      {
+        status: 400,
+        schema: z.object({ message: z.string() }),
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/api/student/session/end/:id",
+    alias: "postApistudentsessionendId",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: postApistudentsessionendId_Body,
+      },
+      {
+        name: "id",
+        type: "Path",
+        schema: z.number().int(),
+      },
+    ],
+    response: z.object({ message: z.string() }),
+    errors: [
+      {
+        status: 400,
+        schema: z.object({ message: z.string() }),
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/api/student/session/start/:id",
+    alias: "postApistudentsessionstartId",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "id",
+        type: "Path",
+        schema: z.number().int(),
+      },
+    ],
+    response: z.object({
+      sessionId: z.number().int().optional(),
+      exercises: z.array(
+        z.object({
+          correctMessage: z.union([z.string(), z.null()]).optional(),
+          incorrectMessage: z.union([z.string(), z.null()]).optional(),
+          questionContent: z.string().optional(),
+          id: z.number().int(),
+          answers: z.array(
+            z
+              .object({
+                text: z.union([
+                  z.union([z.array(z.string()), z.string()]),
+                  z.null(),
+                ]),
+                audio: z.union([z.string(), z.null()]),
+              })
+              .partial()
+          ),
+          options: z.array(z.string()),
+          unitId: z.number().int().optional(),
+          audio: z.union([z.string(), z.null()]).optional(),
+          instruction: z.string(),
+          answerType: z.enum(["freetext", "bubbles"]).optional(),
+        })
+      ),
+      level: z.number().int(),
+    }),
+    errors: [
+      {
+        status: 400,
+        schema: z.object({ message: z.string() }),
+      },
+    ],
+  },
+  {
+    method: "get",
+    path: "/api/student/subscribable",
+    alias: "getApistudentsubscribable",
+    requestFormat: "json",
+    response: z.array(
+      z.object({
+        id: z.number().int(),
+        name: z.string(),
+        language: z.string(),
+        description: z.union([z.string(), z.null()]).optional(),
+        status: z.string(),
+        creator: z
+          .union([
+            z.object({
+              id: z.number().int(),
+              email: z.string(),
+              firstname: z.union([z.string(), z.null()]).optional(),
+              lastname: z.union([z.string(), z.null()]).optional(),
+              emailVerified: z.boolean().optional(),
+              mobile: z.union([z.string(), z.null()]).optional(),
+              profileImage: z.union([z.string(), z.null()]).optional(),
+              role: z.string(),
+            }),
+            z.null(),
+          ])
+          .optional(),
+        units: z.array(
+          z.object({
+            id: z.number().int(),
+            courseId: z.number().int().optional(),
+            name: z.string(),
+            description: z.string(),
+            type: z.enum(["lesson", "practice"]),
+            level: z.number().int(),
+          })
+        ),
+      })
+    ),
   },
   {
     method: "get",
@@ -645,10 +927,11 @@ const endpoints = makeApi([
     ],
     response: z.object({
       id: z.number().int(),
+      courseId: z.number().int().optional(),
       name: z.string(),
       description: z.string(),
+      type: z.enum(["lesson", "practice"]),
       level: z.number().int(),
-      creatorId: z.number().int().optional(),
     }),
     errors: [
       {
@@ -682,11 +965,17 @@ const endpoints = makeApi([
       },
     ],
     response: z.object({
-      id: z.number().int(),
-      name: z.string(),
-      description: z.string(),
-      level: z.number().int(),
-      creatorId: z.number().int().optional(),
+      message: z.string(),
+      data: z.array(
+        z.object({
+          id: z.number().int(),
+          courseId: z.number().int().optional(),
+          name: z.string(),
+          description: z.string(),
+          type: z.enum(["lesson", "practice"]),
+          level: z.number().int(),
+        })
+      ),
     }),
     errors: [
       {
@@ -736,12 +1025,26 @@ const endpoints = makeApi([
     ],
     response: z.array(
       z.object({
+        correctMessage: z.union([z.string(), z.null()]).optional(),
+        incorrectMessage: z.union([z.string(), z.null()]).optional(),
+        questionContent: z.string().optional(),
         id: z.number().int(),
-        unitId: z.number().int().optional(),
-        questionType: z.string().optional(),
-        question: z.string(),
+        answers: z.array(
+          z
+            .object({
+              text: z.union([
+                z.union([z.array(z.string()), z.string()]),
+                z.null(),
+              ]),
+              audio: z.union([z.string(), z.null()]),
+            })
+            .partial()
+        ),
         options: z.array(z.string()),
-        answers: z.array(z.union([z.array(z.string()), z.string()])),
+        unitId: z.number().int().optional(),
+        audio: z.union([z.string(), z.null()]).optional(),
+        instruction: z.string(),
+        answerType: z.enum(["freetext", "bubbles"]).optional(),
       })
     ),
     errors: [

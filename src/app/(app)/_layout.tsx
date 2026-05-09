@@ -21,6 +21,9 @@ export default function Layout() {
         <Stack
           screenOptions={{
             headerShown: false,
+            contentStyle: {
+              backgroundColor: "232427",
+            }
           }}
         >
           <Slot />

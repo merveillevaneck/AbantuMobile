@@ -1,8 +1,13 @@
-import { Pressable, Text, View } from "react-native"
+import { ActivityIndicator, Pressable, Text, View } from "react-native"
 import { cn } from '@/tw/util';
 import { ProgressBar } from "./progress-bar";
 import { Tag } from "./tag";
 import { ResponseOf } from "@/server/api/responses";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { subscribeToCourse, subscribeToCourseKey } from "@/server/subscribe-to-course";
+import { Button } from "./button";
+import { getAvailableCoursesKey } from "@/server/get-available-courses";
+import { myCoursesKey } from "@/server/get-my-courses";
 
 
 type Courses = ResponseOf<'getApicourses'>
@@ -13,6 +18,8 @@ export type CourseItemProps = {
     onPress?: ((course?: Course) => void) | (() => void)
     progress?: number;
     action?: React.ReactNode;
+    subscribeable?: boolean;
+    onSubscribe?: () => void;
 }
 
 export const CourseItem = (props: CourseItemProps) => {
@@ -22,7 +29,21 @@ export const CourseItem = (props: CourseItemProps) => {
         onPress: $onPress,
         progress,
         action,
+        subscribeable,
     } = props;
+
+    const queryClient = useQueryClient();
+    const { mutateAsync: sub, isPending } = useMutation({
+        mutationKey: subscribeToCourseKey,
+        mutationFn: subscribeToCourse,
+        onSuccess: async () => {
+            await Promise.all([
+                await queryClient.invalidateQueries({queryKey: getAvailableCoursesKey}),
+                await queryClient.invalidateQueries({queryKey: myCoursesKey})
+            ])
+            props.onSubscribe?.();
+        }
+    })
 
     const onPress = () => {
         $onPress?.(course);
@@ -37,11 +58,17 @@ export const CourseItem = (props: CourseItemProps) => {
         >
             <View className="flex flex-row items-center justify-between mb-8">
                 <Text className="text-white text-2xl font-semibold flex-5">{course.name}</Text>
-                {typeof progress === "number" && (
+                {!isPending && typeof progress === "number" && (
                     <ProgressBar progress={0.5} className="flex-3" />
                 )}
-                {!progress && !!action && typeof action !== "string" && (
+                {!isPending && !progress && subscribeable && !action && (
+                    <Button text="Subscribe" onPress={() => sub(course.id)} />
+                )}
+                {!isPending && !progress && !!action && typeof action !== "string" && (
                     action
+                )}
+                {isPending && (
+                    <ActivityIndicator color="white" size={18} />
                 )}
             </View>
             <View className="flex flex-row items-center justify-between">

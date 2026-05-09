@@ -1,9 +1,13 @@
 import { ResponseOf } from "@/server/api/responses";
 import { cn } from "@/tw/util";
-import { ScrollView } from "react-native";
+import { ActivityIndicator, ScrollView } from "react-native";
 import { CourseItem } from "./course-item";
 import { router } from "expo-router";
 import { Button } from "./button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { subscribeToCourse } from "@/server/subscribe-to-course";
+import { getAvailableCoursesKey } from "@/server/get-available-courses";
+import { myCoursesKey } from "@/server/get-my-courses";
 
 const navigateToCourseSummary = (id: number) => {
     router.push(`/courses/${id}`)
@@ -24,6 +28,20 @@ export const AvailableCoursesDisplay = (props: AvailableCoursesDisplayProps) => 
         courses,
         isLoading,
      } = props;
+
+     const queryClient = useQueryClient();
+     const { mutateAsync: subscribe, isPending } = useMutation({
+        mutationKey: ['subscribe-to-course'],
+        mutationFn: subscribeToCourse,
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({queryKey: myCoursesKey}),
+                queryClient.invalidateQueries({queryKey: getAvailableCoursesKey})
+            ])
+            router.back();
+        }
+     })
+
     return (
         <ScrollView
             className={cn(
@@ -40,7 +58,8 @@ export const AvailableCoursesDisplay = (props: AvailableCoursesDisplayProps) => 
                     key={course.id}
                     course={course}
                     onPress={() => navigateToCourseSummary(course.id)}
-                    action={<Button text="Subscribe" onPress={() => alert("add course to thing")} />}
+                    subscribeable
+                    onSubscribe={() => router.back()}
                 />
             ))}
         </ScrollView>

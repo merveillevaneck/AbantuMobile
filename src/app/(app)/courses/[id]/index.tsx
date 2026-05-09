@@ -46,7 +46,6 @@ export default function Page() {
             <UnitItem
                 unit={unit}
                 key={unit.id}
-                progress={0.5}
             />
         ))}
         <Text className="text-white font-semibold">units go here</Text>

@@ -1,12 +1,12 @@
 import { Pressable, Text, View } from "react-native"
 import { cn } from '@/tw/util';
-import { components, paths } from "@/server/schema";
 import { ProgressBar } from "./progress-bar";
 import { Tag } from "./tag";
 import { Divider } from "./divider";
+import { Button } from "./button";
+import { apiClient } from "@/server/api/client";
 
-
-type Unit = paths['/api/units/{id}']['get']['responses'][200]['content']['application/json'];
+type Unit = Awaited<ReturnType<typeof apiClient.getApicoursesId>>['units'][number];
 export type UnitItemProps = {
     className?: string;
     unit: Unit;
@@ -35,23 +35,23 @@ export const UnitItem = (props: UnitItemProps) => {
             onPress={onPress}
             className={
                 cn(
-                    "flex flex-col items-stretch rounded-4xl bg-[#399653] shadow-md p-4 px-8 active:opacity-60",
+                    "flex flex-col items-stretch rounded-4xl bg-[#399653] shadow-md p-4 px-8 active:opacity-60 relative",
                     className
                 )
             }
         >
             <View className="flex flex-row items-center justify-between mb-2">
-                <Text className="text-white text-2xl font-semibold flex-5">{unit.name}</Text>
-                {typeof progress === "number" && <ProgressBar progress={progress} className="flex-3" />}
+                <View className="flex flex-2 flex-row items-center gap-2">
+                    <Text className="text-white text-2xl font-semibold">{unit.name}</Text>
+                    <Tag text={"level " + unit.level} />
+                </View>
+                {typeof progress === "number" && <ProgressBar progress={progress} className="flex-1" />}
                 {typeof progress === "undefined" && (
                     action
                 )}
             </View>
-            <View className="flex flex-row items-center justify-between">
-                <Tag text={"level " + unit.level} />
-            </View>
 
-            <Text className="text-xs text-[#BAFFCA] mt-4">
+            <Text className="text-sm  text-[#BAFFCA] mt-4">
                 {unit.description}
             </Text>
         </Pressable>

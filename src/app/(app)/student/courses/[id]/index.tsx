@@ -1,29 +1,29 @@
 
-import React, { useEffect } from "react";
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
+import React, { useState } from "react";
+import { ActivityIndicator, View } from "react-native";
 
-import { CourseItem, Header, Screen, UnitItem } from "@/components";
-import { useGetApiCourses, useGetApiStudentCourses } from "@/server/api";
+import { Header, Screen, UnitItem } from "@/components";
 import { router, useLocalSearchParams } from "expo-router";
-import { Button } from "@/components/button";
-import { useTokenStore } from "@/store/token";
-import { AntDesign, FontAwesome } from "@expo/vector-icons";
-import { MyCoursesDisplay } from "@/components/my-courses-display";
 import { useGetApiStudentCourse } from "@/server/api";
+import { ExpoContextMenu } from '@appandflow/expo-context-menu';
+import { getUnitExercises } from "@/server/get-unit-exercises";
+import { useMutation } from "@tanstack/react-query";
+import { usePracticeStore } from "@/store/practice";
 
-const navigateBack = () => {
-    router.back();
-}
+const navigateToPracticeSession = (courseId: number, unitId: number) => router.push(`/student/courses/${courseId}/practice/${unitId}`)
+
 
 export default function Page() {
 
-    const { id } = useLocalSearchParams<{id: string}>();
+  const { id } = useLocalSearchParams<{id: string}>();
 
-    const { data, isPending, error } = useGetApiStudentCourse({
-        id: Number(id),
-    })
+  const { data, isPending } = useGetApiStudentCourse({
+      id: Number(id),
+  })
 
-    console.log("error", error)
+  const handlePractice = async (unit: (typeof data.units)[number]) => {
+    navigateToPracticeSession(Number(id), unit.id);
+  }
 
   if (isPending) return (
     <Screen
@@ -43,10 +43,8 @@ export default function Page() {
     <Screen
       header={
         <Header
-          //title={data?.name}
           title="course progress summary"
-          onBack={() => router.back()}
-        />
+          onBack={() => router.back()} />
       }
       containerClassName="gap-4 pb-10 relative"
     >
@@ -55,6 +53,7 @@ export default function Page() {
                 unit={unit}
                 key={unit.id}
                 progress={0.5}
+                onPress={() => handlePractice(unit)}
             />
         ))}
     </Screen>

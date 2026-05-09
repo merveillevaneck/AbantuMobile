@@ -1,20 +1,30 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { paths } from '@/server/schema';
+import { apiClient } from '@/server/api/client';
 
-type Unit = paths['/api/units/{id}']['get']['responses'][200]['content']['application/json'];
-type Exercises = paths['/api/units/{id}/exercises']['get']['responses'][200]['content']['application/json'];
-type Exercise = Exercises[number];
+type Exercise = Awaited<ReturnType<typeof apiClient.getApiunitsIdexercises>>[number];
 // Define the interface for your state
-interface PracticeState {
-    exercises: Exercises,
-    start: (exercises: Exercises) => void;
-    completed: Exercises,
-    end: () => void;
-    next: () => void;
+
+export type CompletedExercise = Exercise & {correct: boolean, answer: string[]};
+type PracticeStateFields = {
+    exercises: Exercise[],
+    completed: CompletedExercise[],
     current: Exercise | null;
 }
+
+const DefaultStateValues: PracticeStateFields = {
+  exercises: [],
+  completed: [],
+  current: null,
+}
+interface IPracticeState {
+    start: (exercises: Exercise[]) => void;
+    end: () => void;
+    complete: (correct: boolean, answer: string[]) => void;
+}
+
+type PracticeState = PracticeStateFields & IPracticeState;
 
 // Create a custom storage object for Zustand
 const zustandStorage: StateStorage = {
@@ -30,10 +40,33 @@ const zustandStorage: StateStorage = {
   },
 };
 
-const determineNextExercise = (state: PracticeState) => {
+
+const determineNextExercise = (state: PracticeStateFields) => {
     if (state.exercises.length === 0) return null;
-    if (state.exercises.length === 1) return 
-    if (state.current === null) return {}
+    return state.exercises[0];
+}
+
+
+const completeCurrentExercise = (state: PracticeStateFields, correct: boolean, answer: string[]) => {
+  const { completed, exercises, current } = state;
+  const nextExercise = determineNextExercise(state);
+  const $completed = current ? [...completed, {...current, correct, answer: answer}] : completed;
+  const $current = nextExercise;
+  const $exercises = nextExercise ? exercises.slice(1) : exercises;
+
+  return {...state, completed: $completed, current: $current, exercises: $exercises}
+}
+
+const start = (exercises: Exercise[]) => {
+  const state = {...DefaultStateValues, exercises};
+  const firstExercise = determineNextExercise(state);
+  const $exercises = !!firstExercise ? exercises.slice(1) : [];
+
+  return {
+    ...state,
+    exercises: $exercises,
+    current: firstExercise ?? null,
+  }
 }
 
 
@@ -43,19 +76,19 @@ const determineNextExercise = (state: PracticeState) => {
     //   logout: () => set({ username: '', isLoggedIn: false }),
 
 // Create the store
-// export const useUserStore = create<PracticeState>()(
-//   persist(
-//     (set) => ({
-//         exercises: [],
-//         current: null,
-//         next: null,
-//         end: () => set({exercises: [], current: null}),
-//         //next: () => set({}),
-//         start: (exercises: Exercises) => ({exercises})
-//     }),
-//     {
-//       name: 'user-storage', // unique name for the storage key
-//       storage: createJSONStorage(() => zustandStorage), // use the custom storage object
-//     }
-//   )
-// );
+export const usePracticeStore = create<PracticeState>()(
+  persist(
+    (set) => ({
+      ...DefaultStateValues,
+        complete: (correct, answer: string[]) => set(state => completeCurrentExercise(state, correct, answer)),
+
+        end: () => set({exercises: [], current: null}),
+        //next: () => set({}),
+        start: (exercises: Exercise[]) => set(start(exercises))
+    }),
+    {
+      name: 'user-storage', // unique name for the storage key
+      storage: createJSONStorage(() => zustandStorage), // use the custom storage object
+    }
+  )
+);
