@@ -4,6 +4,13 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated"
 import { ProgressBar } from "./progress-bar";
 import { Button } from "./button";
 import { cn } from "@/tw/util";
+import { Audio } from "expo-av";
+import { useEffect } from "react";
+
+const playComplete = async () => {
+    const { sound } = await Audio.Sound.createAsync(require("../complete-tone.mp3"))
+    await sound.playAsync();
+}
 
 export type PracticeSessionSummaryProps = {
     completed: CompletedExercise[];
@@ -21,6 +28,11 @@ export const PracticeSessionSummary = (props: PracticeSessionSummaryProps) => {
     const totalWrong = totalComplete - totalRight;
 
     //todo: submit da stats tingies here
+
+    useEffect(() => {
+        playComplete();
+    },
+    [])
 
 
     return (

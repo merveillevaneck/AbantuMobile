@@ -1,3 +1,4 @@
+import { uniqueId } from "lodash";
 import { apiClient } from "./api/client"
 
 export const getUnitExercisesKey = ['exercises'];
@@ -9,5 +10,11 @@ export const getUnitExercises = async (unitId: number) => {
         }
     })
 
-    return result;
+    return result.map(ex => ({
+        ...ex,
+        options: ex.options?.map(opt => ({
+            uuid: uniqueId(),
+            text: opt
+        }))
+    }))
 }

@@ -14,6 +14,13 @@ import LottieView from 'lottie-react-native';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { cn } from '@/tw/util';
 import { PracticeSessionSummary } from '@/components/practice-session-summary';
+import { getUnitExercises } from '@/server/get-unit-exercises';
+import { Audio } from 'expo-av';
+
+const playCorrect = async () => {
+    const {sound} = await Audio.Sound.createAsync(require("../../../../../../../correct-tone.mp3"))
+    await sound.playAsync();
+}
 
 export default function Page() {
     const { unitId } = useLocalSearchParams<{id: string, unitId: string}>();
@@ -30,13 +37,14 @@ export default function Page() {
     useQuery({
         queryKey: ["exercises", unitId],
         queryFn: async () => {
-            const result = await apiClient.getApiunitsIdexercises({
-                params: {
-                    id: Number(unitId),
-                }
-            })
+            if (unitId === undefined) return;
+            const result = await getUnitExercises(Number(unitId));
+            // const result = await apiClient.getApiunitsIdexercises({
+            //     params: {
+            //         id: Number(unitId),
+            //     }
+            // })
             start(result);
-
 
             return result;
         },
@@ -69,6 +77,7 @@ export default function Page() {
                     return sheet?.current?.expand();
                 }
                 await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                await playCorrect();
                 //complete(true, opts);
                 setSubmission({correct: true, answer: opts})
                 return sheet?.current?.expand();
@@ -182,7 +191,8 @@ export default function Page() {
     )
 }
 
-type Exercise = Awaited<ReturnType<typeof apiClient.getApiunitsIdexercises>>[number];
+type Exercise = Awaited<ReturnType<typeof getUnitExercises>>[number];
+type Option = Exercise['options'][number];
 type QuestionProps = {
     exercise: Exercise;
     onSubmit: (answer: string[]) => void;
@@ -192,13 +202,13 @@ const Question = (props: QuestionProps) => {
     const { exercise, onSubmit } = props;
 
 
-    const [selected, setSelected] =  useState<string[]>([]);
+    const [selected, setSelected] =  useState<Option[]>([]);
 
-    const handleUnselect = (opt: string) => {
-        setSelected(s => s.filter(sel => sel !== opt))
+    const handleUnselect = (opt: Option) => {
+        setSelected(s => s.filter(sel => sel.uuid !== opt.uuid))
     }
 
-    const handleSelect = (opt: string) => {
+    const handleSelect = (opt: Option) => {
         setSelected(s => [...s, opt]);
     }
 
@@ -206,7 +216,7 @@ const Question = (props: QuestionProps) => {
     const [dimensions, setDimensions] = useState<PillDimension[]>([]);
 
 
-    const selectedDims = selected.map(opt => dimensions.find(dim => dim.option === opt))
+    const selectedDims = selected.map(opt => dimensions.find(dim => dim.option.uuid === opt.uuid))
     return (
         <View className="flex-1 flex-col items-stretch">
             <Animated.View
@@ -228,7 +238,7 @@ const Question = (props: QuestionProps) => {
                             <Pill
                                 textClassName="text-xl opacity-0"
                                 key={idx}
-                                text={opt}
+                                text={opt.text}
                                 className=" bg-gray-700 border-3 border-t-0 border-l-0 border-b-gray-700 border-r-gray-700  rounded-2xl "
                             />
                         ))}
@@ -248,8 +258,8 @@ const Question = (props: QuestionProps) => {
                                     setDimensions([...dimensions])
                                 }}
                                 selected={selectedDims}
-                                key={opt}
-                                text={opt}
+                                key={opt.uuid}
+                                opt={opt}
                                 onSelect={opt => handleSelect(opt)}
                                 onUnselect={() => handleUnselect(opt)}
                             />
@@ -258,26 +268,27 @@ const Question = (props: QuestionProps) => {
                 </View>
             </Animated.View>
             <View className="items-stretch justify-center p-5 pb-10">
-                <Button text="Check" textClassName='text-2xl' onPress={() => onSubmit(selected)}  />
+                <Button text="Check" textClassName='text-2xl' onPress={() => onSubmit(selected.map(s => s.text))}  />
             </View>
         </View>
     )
 }
 
-type PillDimension = {option: string, x: number, y: number, width: number, idx: number};
+type PillDimension = {option: Option, x: number, y: number, width: number, idx: number};
 type HoverPillProps = {
-    text: string;
-    onSelect: (opt: string) => void;
+    opt: Option
+    onSelect: (opt: Option) => void;
     onUnselect: () => void;
     onLayout: (width: number, x: number, y: number) => void;
     selected: PillDimension[];
 }
 
 const HoverPill = (props: HoverPillProps) => {
-    const { text, onSelect, onUnselect, selected } = props;
+    const { opt, onSelect, onUnselect, selected } = props;
+    const { text, uuid } = opt;
 
     const pillStyle = useAnimatedStyle(() => {
-        const idx = selected.findIndex(s => s.option === text);
+        const idx = selected.findIndex(s => s.option.uuid === uuid);
         const isSelected = idx !== -1;
         const sliced = selected.slice(0, idx);
         const totalWidth = sliced.reduce((prev, curr) => prev + curr.width, 0)
@@ -304,7 +315,7 @@ const HoverPill = (props: HoverPillProps) => {
                 text={text}
                 textClassName="text-xl"
                 hapticStyle={HapticStyle.Heavy}
-                onPress={() => !!selected.find(s => s.option === text) ? onUnselect() : onSelect(text)}
+                onPress={() => !!selected.find(s => s.option.uuid === uuid) ? onUnselect() : onSelect(opt)}
                 className="shadow-md border-3 border-t-0 border-l-0 border-b-gray-700 border-r-gray-700  rounded-2xl "
             />
         </Animated.View>

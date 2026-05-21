@@ -2,8 +2,11 @@ import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiClient } from '@/server/api/client';
+import { Platform } from 'react-native';
+import { getUnitExercises } from '@/server/get-unit-exercises';
 
-type Exercise = Awaited<ReturnType<typeof apiClient.getApiunitsIdexercises>>[number];
+type Exercise = Awaited<ReturnType<typeof getUnitExercises>>[number];
+
 // Define the interface for your state
 
 export type CompletedExercise = Exercise & {correct: boolean, answer: string[]};
@@ -26,16 +29,20 @@ interface IPracticeState {
 
 type PracticeState = PracticeStateFields & IPracticeState;
 
+const isWeb = Platform.OS === "web";
 // Create a custom storage object for Zustand
 const zustandStorage: StateStorage = {
   setItem: async (name, value) => {
+    if (isWeb) return localStorage.setItem(name, value);
     await AsyncStorage.setItem(name, value);
   },
   getItem: async (name) => {
+    if (isWeb) return localStorage.getItem(name);
     const value = await AsyncStorage.getItem(name);
     return value;
   },
   removeItem: async (name) => {
+    if (isWeb) return localStorage.removeItem(name);
     await AsyncStorage.removeItem(name);
   },
 };

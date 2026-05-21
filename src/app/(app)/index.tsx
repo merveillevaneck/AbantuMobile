@@ -43,6 +43,7 @@ export default function Page() {
       containerClassName="gap-4 pb-10 relative flex justify-center items-center"
     >
       <ActivityIndicator color="green" size={32}  />
+      <Text>hello</Text>
     </Screen>
   )
 
