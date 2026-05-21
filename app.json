@@ -11,6 +11,12 @@
       "expo-secure-store"
     ],
     "name": "AbantuMobile",
-    "slug": "AbantuMobile"
+    "slug": "AbantuMobile",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8b52970e-4ebe-45ae-999f-be1b821b8da5"
+      }
+    }
   }
 }
