@@ -2,6 +2,8 @@
 
 cd /home/merv/Developer/abantu-app-staging
 
+echo "deploying..."
+
 git pull
 
 /home/merv/.bun/bin/bunx expo export --platform=web
