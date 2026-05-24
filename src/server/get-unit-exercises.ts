@@ -16,5 +16,5 @@ export const getUnitExercises = async (unitId: number) => {
             uuid: uniqueId(),
             text: opt
         }))
-    }))
+    })).sort(() => Math.random() - 0.5);
 }
