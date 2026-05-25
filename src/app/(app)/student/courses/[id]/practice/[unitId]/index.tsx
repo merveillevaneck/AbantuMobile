@@ -317,10 +317,7 @@ const HoverPill = (props: HoverPillProps) => {
         const isSelected = idx !== -1;
         const sliced = selected.slice(0, idx);
         const { offX, offY } = sliced.reduce(calcOffsets(widthThreshold), {offX: 0, offY: 0})
-        console.log('totalOffsetX', opt.text, offX);
-        ;console.log('totalOffsetY', opt.text, offY);
         const item = selected?.at(idx);
-        console.log('item.x', opt.text, item?.x)
         let transformX = offX - (item?.x ?? 0);
         let transformY = topHeightDisplacement - (item?.y ?? 0) + offY;
         return ({
