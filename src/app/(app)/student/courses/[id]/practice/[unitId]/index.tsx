@@ -92,7 +92,7 @@ export default function Page() {
 
 
     if (showLoading) return (
-        <Screen key={Date.now()} containerClassName='flex items-center justify-center'>
+        <Screen key={Date.now()} containerClassName='flex items-center justify-center]'>
             <LottieView
                 key={Date.now()}
                 ref={animation}
@@ -112,11 +112,12 @@ export default function Page() {
 
     return (
             <Screen
-                header={!finished ? <PracticeSessionHeader progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
-                containerClassName='flex-1 justify-center items-stretch'
+                header={!finished ? <PracticeSessionHeader className="md:w-120 md:self-center" progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
+                containerClassName='flex-1 justify-center items-center'
             >
-                <Animated.View className="flex flex-1 flex-col"
-                    style={{flex: 1, flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center'}}
+                <Animated.View
+                    className="flex flex-1 flex-col items-stretch"
+                    style={{flex: 1, flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center', maxWidth: 400}}
                     entering={FadeIn}>
                     {finished && (
                         <PracticeSessionSummary completed={completed} onSubmit={() => router.back()} />
@@ -213,6 +214,7 @@ const Question = (props: QuestionProps) => {
     }
 
 
+    const [containerWidth, setContainerWidth] = useState(0);
     const [dimensions, setDimensions] = useState<PillDimension[]>([]);
 
 
@@ -243,9 +245,12 @@ const Question = (props: QuestionProps) => {
                             />
                         ))}
                     </View>
-                    <View className="h-36 flex flex-row flex-wrap mt-10 gap-2 absolute top-0 left-0">
+                    <View
+                        className="h-36 flex flex-row flex-wrap mt-10 gap-2 absolute top-0 left-0"
+                        onLayout={e => setContainerWidth(e.nativeEvent.layout.width)}>
                         {exercise.options?.map((opt, idx) => (
                             <HoverPill
+                                containerWidth={containerWidth}
                                 onLayout={(width, x, y) => {
                                     const pillDimension = {
                                         idx,
@@ -281,21 +286,43 @@ type HoverPillProps = {
     onUnselect: () => void;
     onLayout: (width: number, x: number, y: number) => void;
     selected: PillDimension[];
+    containerWidth: number;
+}
+const isOverThreshold = (threshold: number, prev: number, curr: number) => {
+    return Math.abs(prev + curr - threshold) < 50
+}
+
+const calcOffsets = (threshold: number) => (prev: {offX: number, offY: number}, curr: PillDimension) => {
+    const { offX, offY } = prev;
+
+    const isOver = isOverThreshold(threshold, offX, curr.width);
+
+    const nextOffX = isOver ? 0 : curr.width + offX + 10;
+    const nextOffY = offY + (isOver ? 47 : 0)
+
+    return {
+        offX: nextOffX,
+        offY: nextOffY
+    }
 }
 
 const HoverPill = (props: HoverPillProps) => {
-    const { opt, onSelect, onUnselect, selected } = props;
+    const { opt, onSelect, onUnselect, selected, containerWidth } = props;
     const { text, uuid } = opt;
 
     const pillStyle = useAnimatedStyle(() => {
+        const widthThreshold = containerWidth - 55
+        const topHeightDisplacement = -190;
         const idx = selected.findIndex(s => s.option.uuid === uuid);
         const isSelected = idx !== -1;
         const sliced = selected.slice(0, idx);
-        const totalWidth = sliced.reduce((prev, curr) => prev + curr.width, 0)
-        const totalOffset = idx * 10 + totalWidth;
+        const { offX, offY } = sliced.reduce(calcOffsets(widthThreshold), {offX: 0, offY: 0})
+        console.log('totalOffsetX', opt.text, offX);
+        ;console.log('totalOffsetY', opt.text, offY);
         const item = selected?.at(idx);
-        let transformX = totalOffset - (item?.x ?? 0) - (totalWidth > 250 ? (totalOffset) : 0);
-        let transformY = -200 + (item?.y ?? 0) * -1 + (totalWidth > 250 ? 43 : 0);
+        console.log('item.x', opt.text, item?.x)
+        let transformX = offX - (item?.x ?? 0);
+        let transformY = topHeightDisplacement - (item?.y ?? 0) + offY;
         return ({
             transform: [{translateY: withTiming(isSelected ? transformY : 0, {duration: 100})},
                 {translateX: withTiming(isSelected ? transformX : 0, {duration: 100 })}
@@ -315,7 +342,7 @@ const HoverPill = (props: HoverPillProps) => {
                 text={text}
                 textClassName="text-xl"
                 hapticStyle={HapticStyle.Heavy}
-                onPress={() => !!selected.find(s => s.option.uuid === uuid) ? onUnselect() : onSelect(opt)}
+                onPress={(e) => !!selected.find(s => s.option.uuid === uuid) ? onUnselect() : onSelect(opt)}
                 className="shadow-md border-3 border-t-0 border-l-0 border-b-gray-700 border-r-gray-700  rounded-2xl "
             />
         </Animated.View>

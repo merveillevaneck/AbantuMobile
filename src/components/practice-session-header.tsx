@@ -16,7 +16,7 @@ type PracticeSessionHeaderProps = {
 export const PracticeSessionHeader = (props: PracticeSessionHeaderProps) => {
     const { progress, onBack, className } = props;
 
-    return (
+    return ( 
         <View
             className={cn(
                 "flex flex-row px-5 items-center bg-[#232427] py-4 gap-16 mt-16 pr-15",
