@@ -1,11 +1,13 @@
 import { CompletedExercise, usePracticeStore } from "@/store/practice"
-import { View, Text } from "react-native";
+import { View, Text, FlatListComponent } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated"
 import { ProgressBar } from "./progress-bar";
 import { Button } from "./button";
 import { cn } from "@/tw/util";
 import { Audio } from "expo-av";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { createSoundByteRef } from "@/hooks/use-soundbyte";
 
 const playComplete = async () => {
     const { sound } = await Audio.Sound.createAsync(require("../complete-tone.mp3"))
@@ -29,10 +31,17 @@ export const PracticeSessionSummary = (props: PracticeSessionSummaryProps) => {
 
     //todo: submit da stats tingies here
 
-    useEffect(() => {
-        playComplete();
-    },
-    [])
+    useQuery({
+        queryKey: ["complete"],
+        queryFn: async () => {
+            const sound = await createSoundByteRef("complete tone", { type: "mp3" });
+            await sound.playAsync();
+            return sound;
+        },
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        refetchOnReconnect: false,
+    })
 
 
     return (

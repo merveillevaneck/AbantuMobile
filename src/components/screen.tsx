@@ -1,10 +1,11 @@
 import { cn } from "@/tw/util";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 type ScreenProps = {
     header?: React.ReactNode;
     className?: string;
     containerClassName?: string;
+    contentContainerClassName?: string;
     children?: React.ReactNode;
 }
 
@@ -13,26 +14,31 @@ export const Screen = (props: ScreenProps) => {
         header,
         className,
         containerClassName,
+        contentContainerClassName,
         children,
     } = props;
 
     return (
         <View
             className={cn(
-                "flex-1 flex flex-col items-stretch gap-2 bg-[#232427]",
+                "flex-1 flex flex-col items-stretch bg-[#232427]",
                 !header ? "pt-16" : "",
                 className
             )}
         >
             {header}
-            <View
+            <ScrollView
                 className={cn(
-                    "flex flex-1 items-stretch flex-col p-4",
+                    "flex-1",
                     containerClassName
+                )}
+                contentContainerClassName={cn(
+                    "pt-10 pb-20",
+                   contentContainerClassName 
                 )}
             >
                 {children}
-            </View>
+            </ScrollView>
         </View>
     )
 }

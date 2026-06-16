@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 
 import { Header, Screen, UnitItem } from "@/components";
 import { router, useLocalSearchParams } from "expo-router";
@@ -44,9 +44,12 @@ export default function Page() {
       header={
         <Header
           title="course progress summary"
+          className='w-screen'
           onBack={() => router.back()} />
       }
-      containerClassName="gap-4 pb-10 relative"
+      className="items-center"
+      containerClassName="gap-4 relative w-full"
+      contentContainerClassName="lg:w-[800px] self-center gap-4"
     >
         {data?.units?.map(unit => (
             <UnitItem

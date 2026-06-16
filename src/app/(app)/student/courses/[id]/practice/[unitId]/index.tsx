@@ -16,11 +16,27 @@ import { cn } from '@/tw/util';
 import { PracticeSessionSummary } from '@/components/practice-session-summary';
 import { getUnitExercises } from '@/server/get-unit-exercises';
 import { Audio } from 'expo-av';
+import { useSoundByte } from '@/hooks/use-soundbyte';
+
+const blobToBase64 = (blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            resolve(reader.result as string);
+        }
+
+        reader.onerror = (error) => reject(error)
+
+        reader.readAsDataURL(blob);
+    })
+}
+
 
 const playCorrect = async () => {
     const {sound} = await Audio.Sound.createAsync(require("../../../../../../../correct-tone.mp3"))
     await sound.playAsync();
 }
+
 
 export default function Page() {
     const { unitId } = useLocalSearchParams<{id: string, unitId: string}>();
@@ -30,8 +46,6 @@ export default function Page() {
 
     const { start, complete, current, exercises, completed } = usePracticeStore();
 
-    console.log('current', JSON.stringify(current, null, 2))
-
     const [submission, setSubmission] = useState<{correct: boolean, answer: string[]} | null>(null);
 
     useQuery({
@@ -39,17 +53,15 @@ export default function Page() {
         queryFn: async () => {
             if (unitId === undefined) return;
             const result = await getUnitExercises(Number(unitId));
-            // const result = await apiClient.getApiunitsIdexercises({
-            //     params: {
-            //         id: Number(unitId),
-            //     }
-            // })
+
             start(result);
 
             return result;
         },
-        refetchOnWindowFocus: true,
+        refetchOnWindowFocus: false,
     })
+
+    const { play: playCorrect } = useSoundByte("correct tone", { type: "mp3" });
 
     const progress = useMemo(() => {
         const total = (completed.length + exercises.length) + (!!current ? 1 : 0)
@@ -92,7 +104,9 @@ export default function Page() {
 
 
     if (showLoading) return (
-        <Screen key={Date.now()} containerClassName='flex items-center justify-center]'>
+        <Screen key={Date.now()}
+            containerClassName='flex items-center justify-center]'
+            contentContainerClassName='flex flex-1 items-center justify-center]'>
             <LottieView
                 key={Date.now()}
                 ref={animation}
@@ -114,6 +128,7 @@ export default function Page() {
             <Screen
                 header={!finished ? <PracticeSessionHeader className="md:w-120 md:self-center" progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
                 containerClassName='flex-1 justify-center items-center'
+                contentContainerClassName='flex-1'
             >
                 <Animated.View
                     className="flex flex-1 flex-col items-stretch"
@@ -217,6 +232,8 @@ const Question = (props: QuestionProps) => {
     const [containerWidth, setContainerWidth] = useState(0);
     const [dimensions, setDimensions] = useState<PillDimension[]>([]);
 
+    useSoundByte(exercise.questionContent, { type: "wav", playOnMount: true });
+
 
     const selectedDims = selected.map(opt => dimensions.find(dim => dim.option.uuid === opt.uuid))
     return (
@@ -279,6 +296,7 @@ const Question = (props: QuestionProps) => {
     )
 }
 
+
 type PillDimension = {option: Option, x: number, y: number, width: number, idx: number};
 type HoverPillProps = {
     opt: Option
@@ -310,6 +328,8 @@ const HoverPill = (props: HoverPillProps) => {
     const { opt, onSelect, onUnselect, selected, containerWidth } = props;
     const { text, uuid } = opt;
 
+    const { play } = useSoundByte(text.replaceAll(" ", "_"));
+
     const pillStyle = useAnimatedStyle(() => {
         const widthThreshold = containerWidth - 55
         const topHeightDisplacement = -190;
@@ -326,6 +346,14 @@ const HoverPill = (props: HoverPillProps) => {
             ]
         })
     })
+
+    const onPress = async () => {
+        const isSelected = !!selected.find(s => s.option.uuid === uuid);
+        if (!isSelected) await play()
+        if (isSelected)
+         return onUnselect()
+        onSelect(opt)
+    }
     return (
         <Animated.View
             style={pillStyle}
@@ -339,7 +367,7 @@ const HoverPill = (props: HoverPillProps) => {
                 text={text}
                 textClassName="text-xl"
                 hapticStyle={HapticStyle.Heavy}
-                onPress={(e) => !!selected.find(s => s.option.uuid === uuid) ? onUnselect() : onSelect(opt)}
+                onPress={onPress}
                 className="shadow-md border-3 border-t-0 border-l-0 border-b-gray-700 border-r-gray-700  rounded-2xl "
             />
         </Animated.View>

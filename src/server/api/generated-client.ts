@@ -47,6 +47,10 @@ const postApicoursesIdunits_Body = z.array(
     level: z.number().int(),
   })
 );
+const postApiunitsIdexercisesmove_Body = z.object({
+  unitId: z.number().int().optional(),
+  exerciseIds: z.array(z.number().int()).optional(),
+});
 const postApicoursesId_Body = z
   .object({
     name: z.union([z.string(), z.null()]),
@@ -122,6 +126,9 @@ const postApiexercisesId_Body = z
     answerType: z.union([z.enum(["freetext", "bubbles"]), z.null()]),
   })
   .partial();
+const postApimediaaudio_Body = z.array(
+  z.object({ audio: z.string(), id: z.string() })
+);
 const postApicourses_Body = z.object({
   name: z.string(),
   language: z.string(),
@@ -141,6 +148,7 @@ export const schemas = {
   postApiauthlogin_Body,
   postApiauthregisterstudent_Body,
   postApicoursesIdunits_Body,
+  postApiunitsIdexercisesmove_Body,
   postApicoursesId_Body,
   postApivocabId_Body,
   type,
@@ -148,6 +156,7 @@ export const schemas = {
   postApistudentsessionendId_Body,
   postApiunitsId_Body,
   postApiexercisesId_Body,
+  postApimediaaudio_Body,
   postApicourses_Body,
 };
 
@@ -672,6 +681,46 @@ const endpoints = makeApi([
   },
   {
     method: "get",
+    path: "/api/media/audio",
+    alias: "getApimediaaudio",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "id",
+        type: "Query",
+        schema: z.string(),
+      },
+    ],
+    response: z.object({ audio: z.string() }),
+    errors: [
+      {
+        status: 400,
+        schema: z.object({ message: z.string() }),
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/api/media/audio",
+    alias: "postApimediaaudio",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: postApimediaaudio_Body,
+      },
+    ],
+    response: z.object({ message: z.string() }),
+    errors: [
+      {
+        status: 400,
+        schema: z.object({ message: z.string() }),
+      },
+    ],
+  },
+  {
+    method: "get",
     path: "/api/student/courses",
     alias: "getApistudentcourses",
     requestFormat: "json",
@@ -965,17 +1014,12 @@ const endpoints = makeApi([
       },
     ],
     response: z.object({
-      message: z.string(),
-      data: z.array(
-        z.object({
-          id: z.number().int(),
-          courseId: z.number().int().optional(),
-          name: z.string(),
-          description: z.string(),
-          type: z.enum(["lesson", "practice"]),
-          level: z.number().int(),
-        })
-      ),
+      id: z.number().int(),
+      courseId: z.number().int().optional(),
+      name: z.string(),
+      description: z.string(),
+      type: z.enum(["lesson", "practice"]),
+      level: z.number().int(),
     }),
     errors: [
       {
@@ -1069,6 +1113,26 @@ const endpoints = makeApi([
         name: "id",
         type: "Path",
         schema: z.number().int(),
+      },
+    ],
+    response: z.object({ message: z.string() }),
+    errors: [
+      {
+        status: 400,
+        schema: z.object({ message: z.string() }),
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/api/units/:id/exercises/move",
+    alias: "postApiunitsIdexercisesmove",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: postApiunitsIdexercisesmove_Body,
       },
     ],
     response: z.object({ message: z.string() }),
