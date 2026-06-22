@@ -238,7 +238,7 @@ const Question = (props: QuestionProps) => {
 
     const selectedDims = selected.map(opt => dimensions.find(dim => dim.option.uuid === opt.uuid))
     return (
-        <View className="flex-1 flex-col items-stretch p-10">
+        <View className="flex-1 flex-col items-stretch p-10 pt-0">
             <Animated.View
                 entering={FadeIn}
                 style={{flex: 1, flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center'}}
@@ -290,7 +290,7 @@ const Question = (props: QuestionProps) => {
                     </View>
                 </View>
             </Animated.View>
-            <View className="items-stretch justify-center p-5 pb-10">
+            <View className="items-stretch justify-center p-5 pb-4">
                 <Button text="Check" textClassName='text-2xl' onPress={() => onSubmit(selected.map(s => s.text))}  />
             </View>
         </View>
