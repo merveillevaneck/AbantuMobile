@@ -131,7 +131,7 @@ export default function Page() {
                 // contentContainerClassName='flex-1 w-full'
                 className="bg-[#232427] flex-1 flex items-stretch flex-col"
             >
-                {!finished ? <PracticeSessionHeader className="md:self-center m-4" progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
+                {!finished ? <PracticeSessionHeader className="md:self-center m-4 p-2" progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
                 <Animated.View
                     style={{flex: 1, display: 'flex', width: '100%', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center'}}
                     entering={FadeIn}>
@@ -243,11 +243,11 @@ const Question = (props: QuestionProps) => {
                 entering={FadeIn}
                 style={{flex: 1, flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center'}}
             >
-                <View className="flex-2 p-5 flex flex-col items-stretch">
-                    <Text className="text-white text-4xl mb-10">
+                <View className="flex-2 p-5 pt-0 flex flex-col items-stretch">
+                    <Text className="text-white text-2xl mb-10">
                         {exercise?.instruction}
                     </Text>
-                    <Text className="text-white text-2xl">
+                    <Text className="text-white text-xl">
                         {exercise?.questionContent}
                     </Text>
                 </View>
@@ -290,7 +290,7 @@ const Question = (props: QuestionProps) => {
                     </View>
                 </View>
             </Animated.View>
-            <View className="items-stretch justify-center p-5 pb-4">
+            <View className="items-stretch justify-center p-4 pb-1">
                 <Button text="Check" textClassName='text-2xl' onPress={() => onSubmit(selected.map(s => s.text))}  />
             </View>
         </View>
