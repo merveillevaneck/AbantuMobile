@@ -48,8 +48,8 @@ export default function Page() {
           onBack={() => router.back()} />
       }
       className="items-center"
-      containerClassName="gap-4 relative w-full"
-      contentContainerClassName="lg:w-[800px] self-center gap-4"
+      containerClassName="gap-4 relative w-full flex-1"
+      contentContainerClassName="flex flex-col gap-4 px-4 max-w-800"
     >
         {data?.units?.map(unit => (
             <UnitItem

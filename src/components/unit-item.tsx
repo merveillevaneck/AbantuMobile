@@ -13,9 +13,11 @@ export type UnitItemProps = {
     /**
      * The progress of the unit, between 0 and 1. If provided, the progress bar will be displayed.
      */
+    actionText?: React.ReactNode;
     progress?: number;
     action?: React.ReactNode;
     onPress?: ((course?: Unit) => void) | (() => void)
+    onPressItem?: ((course?: Unit) => void) | (() => void)
 }
 
 export const UnitItem = (props: UnitItemProps) => {
@@ -31,29 +33,33 @@ export const UnitItem = (props: UnitItemProps) => {
         $onPress?.(unit);
     }
     return (
-        <Pressable
-            onPress={onPress}
+        <View 
+            // disabled={!props.onPressItem}
             className={
                 cn(
-                    "flex flex-col items-stretch rounded-4xl bg-[#399653] shadow-md p-4 px-8 active:opacity-60 relative",
+                    "flex flex-col items-stretch rounded-4xl bg-[#399653] shadow-md p-4 px-8 relative",
                     className
                 )
             }
         >
-            <View className="flex flex-row items-center justify-between mb-2">
+            <View className="flex flex-row items-start justify-between mb-2">
                 <View className="flex flex-2 flex-row items-center gap-2">
                     <Text className="text-white text-2xl font-semibold">{unit.name}</Text>
                     <Tag text={"level " + unit.level} />
                 </View>
-                {typeof progress === "number" && <ProgressBar progress={progress} className="flex-1" />}
-                {typeof progress === "undefined" && (
-                    action
-                )}
+                <View className="flex flex-col gap-2 items-center flex-1">
+                    {typeof progress === "number" && <ProgressBar progress={progress} className="w-full" />}
+                    {typeof progress === "undefined" && (
+                        action
+                    )}
+                {!!props.onPress && <Button className="w-full" text={props.actionText ?? "practice"} onPress={onPress} />}
+                </View>
             </View>
 
             <Text className="text-sm  text-[#BAFFCA] mt-4">
                 {unit.description}
             </Text>
-        </Pressable>
+
+        </View>
     )
 }

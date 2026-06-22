@@ -125,14 +125,15 @@ export default function Page() {
 
 
     return (
-            <Screen
-                header={!finished ? <PracticeSessionHeader className="md:w-120 md:self-center" progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
-                containerClassName='flex-1 justify-center items-center'
-                contentContainerClassName='flex-1'
+            <View
+                // header={!finished ? <PracticeSessionHeader className="md:w-120 md:self-center" progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
+                // containerClassName='flex-1 justify-center items-center'
+                // contentContainerClassName='flex-1 w-full'
+                className="bg-[#232427] flex-1 flex items-stretch flex-col"
             >
+                {!finished ? <PracticeSessionHeader className="md:self-center m-4" progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
                 <Animated.View
-                    className="flex flex-1 flex-col items-stretch"
-                    style={{flex: 1, flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center', maxWidth: 400}}
+                    style={{flex: 1, display: 'flex', width: '100%', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center'}}
                     entering={FadeIn}>
                     {finished && (
                         <PracticeSessionSummary completed={completed} onSubmit={() => router.back()} />
@@ -203,7 +204,7 @@ export default function Page() {
                     </BottomSheet>
 
                 )}
-            </Screen>
+            </View>
     )
 }
 
@@ -237,12 +238,12 @@ const Question = (props: QuestionProps) => {
 
     const selectedDims = selected.map(opt => dimensions.find(dim => dim.option.uuid === opt.uuid))
     return (
-        <View className="flex-1 flex-col items-stretch">
+        <View className="flex-1 flex-col items-stretch p-10">
             <Animated.View
                 entering={FadeIn}
                 style={{flex: 1, flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center'}}
             >
-                <View className="flex-1 p-5 flex flex-col items-stretch">
+                <View className="flex-2 p-5 flex flex-col items-stretch">
                     <Text className="text-white text-4xl mb-10">
                         {exercise?.instruction}
                     </Text>
@@ -251,8 +252,8 @@ const Question = (props: QuestionProps) => {
                     </Text>
                 </View>
                 <Divider className="opacity-30" />
-                <View className="h-36 relative">
-                    <View className="h-36 flex flex-row flex-wrap mt-10 gap-2 absolute top-0 left-0">
+                <View className="flex flex-col items-stretch relative flex-1">
+                    <View className="flex flex-1 flex-row justify-center flex-wrap mt-10 gap-2 absolute top-0 left-0">
                         {exercise.options?.map((opt, idx) => (
                             <Pill
                                 textClassName="text-xl opacity-0"
@@ -263,7 +264,7 @@ const Question = (props: QuestionProps) => {
                         ))}
                     </View>
                     <View
-                        className="h-36 flex flex-row flex-wrap mt-10 gap-2 absolute top-0 left-0"
+                        className="flex flex-row flex-1 justify-center flex-wrap mt-10 gap-2 absolute top-0 left-0"
                         onLayout={e => setContainerWidth(e.nativeEvent.layout.width)}>
                         {exercise.options?.map((opt, idx) => (
                             <HoverPill
