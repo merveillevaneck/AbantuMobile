@@ -16,7 +16,7 @@ import { cn } from '@/tw/util';
 import { PracticeSessionSummary } from '@/components/practice-session-summary';
 import { getUnitExercises } from '@/server/get-unit-exercises';
 import { Audio } from 'expo-av';
-import { useSoundByte, loadSoundBytes, playBuffer } from '@/hooks/use-soundbyte';
+import {  loadSoundBytes, playBuffer } from '@/hooks/use-soundbyte';
 
 const blobToBase64 = (blob): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -47,8 +47,9 @@ export default function Page() {
     const { start, complete, current, exercises, completed } = usePracticeStore();
 
     const [submission, setSubmission] = useState<{correct: boolean, answer: string[]} | null>(null);
+    const [sounds, setSounds] = useState<Record<string, AudioBuffer>>({});
 
-    const { data } = useQuery({
+    useQuery({
         queryKey: ["exercises", unitId],
         queryFn: async () => {
             if (unitId === undefined) return;
@@ -56,6 +57,7 @@ export default function Page() {
 
             const ids = result.flatMap(ex => [ex.questionContent, ...ex.options.map(o => o.text)]);
             const sounds = await loadSoundBytes(ids);
+            setSounds(sounds);
 
             start(result);
             setShowLoader(false);
@@ -66,7 +68,6 @@ export default function Page() {
     })
 
     // play a preloaded sound by its raw string id (questionContent or option text)
-    const sounds = data?.sounds ?? {};
     const playSound = (id: string) => { const b = sounds[id]; if (b) playBuffer(b); };
 
     // ponytail: commented out — playCorrect falls back to the module-level bundled-mp3 player above

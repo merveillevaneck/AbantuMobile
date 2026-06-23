@@ -47,7 +47,7 @@ export const useSoundByte = (id: string, opts: SoundByteOpts & {playOnMount?: bo
         queryKey: ['sound', id],
         queryFn: async () => {
             const soundRef = await createSoundByteRef(id, opts);
-            if (opts.playOnMount) playBuffer(soundRef);
+            // if (opts.playOnMount) playBuffer(soundRef);
             return soundRef
         },
         retry: false,
