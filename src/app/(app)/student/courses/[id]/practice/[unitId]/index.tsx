@@ -58,6 +58,7 @@ export default function Page() {
             const sounds = await loadSoundBytes(ids);
 
             start(result);
+            setShowLoader(false);
 
             return { result, sounds };
         },
@@ -125,8 +126,7 @@ export default function Page() {
                     backgroundColor: "transparent",
                 }}
                 source={require('@/animation.json')}
-                loop={false}
-                onAnimationFinish={() => setShowLoader(false)}
+                loop={true}
             />
         </Screen>
     )
