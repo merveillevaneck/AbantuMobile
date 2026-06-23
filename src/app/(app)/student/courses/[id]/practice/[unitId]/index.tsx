@@ -16,7 +16,7 @@ import { cn } from '@/tw/util';
 import { PracticeSessionSummary } from '@/components/practice-session-summary';
 import { getUnitExercises } from '@/server/get-unit-exercises';
 import { Audio } from 'expo-av';
-import { useSoundByte } from '@/hooks/use-soundbyte';
+import { useSoundByte, loadSoundBytes } from '@/hooks/use-soundbyte';
 
 const blobToBase64 = (blob): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -48,20 +48,28 @@ export default function Page() {
 
     const [submission, setSubmission] = useState<{correct: boolean, answer: string[]} | null>(null);
 
-    useQuery({
+    const { data } = useQuery({
         queryKey: ["exercises", unitId],
         queryFn: async () => {
             if (unitId === undefined) return;
             const result = await getUnitExercises(Number(unitId));
 
+            const ids = result.flatMap(ex => [ex.questionContent, ...ex.options.map(o => o.text)]);
+            const sounds = await loadSoundBytes(ids);
+
             start(result);
 
-            return result;
+            return { result, sounds };
         },
         refetchOnWindowFocus: false,
     })
 
-    const { play: playCorrect } = useSoundByte("correct tone", { type: "mp3" });
+    // play a preloaded sound by its raw string id (questionContent or option text)
+    const sounds = data?.sounds ?? {};
+    const playSound = (id: string) => sounds[id]?.replayAsync();
+
+    // ponytail: commented out — playCorrect falls back to the module-level bundled-mp3 player above
+    // const { play: playCorrect } = useSoundByte("correct tone", { type: "mp3" });
 
     const progress = useMemo(() => {
         const total = (completed.length + exercises.length) + (!!current ? 1 : 0)
@@ -139,7 +147,7 @@ export default function Page() {
                         <PracticeSessionSummary completed={completed} onSubmit={() => router.back()} />
                     )}
                     {!!current && (
-                        <Question key={current.id} exercise={current} onSubmit={answer => handleCheck(answer)} />
+                        <Question key={current.id} exercise={current} onSubmit={answer => handleCheck(answer)} playSound={playSound} />
                     )}
                 </Animated.View>
                 {!finished && (
@@ -213,10 +221,11 @@ type Option = Exercise['options'][number];
 type QuestionProps = {
     exercise: Exercise;
     onSubmit: (answer: string[]) => void;
+    playSound: (id: string) => void;
 }
 
 const Question = (props: QuestionProps) => {
-    const { exercise, onSubmit } = props;
+    const { exercise, onSubmit, playSound } = props;
 
 
     const [selected, setSelected] =  useState<Option[]>([]);
@@ -233,7 +242,8 @@ const Question = (props: QuestionProps) => {
     const [containerWidth, setContainerWidth] = useState(0);
     const [dimensions, setDimensions] = useState<PillDimension[]>([]);
 
-    useSoundByte(exercise.questionContent, { type: "wav", playOnMount: true });
+    // useSoundByte(exercise.questionContent, { type: "wav", playOnMount: true });
+    useEffect(() => { playSound(exercise.questionContent); }, [exercise.questionContent]);
 
 
     const selectedDims = selected.map(opt => dimensions.find(dim => dim.option.uuid === opt.uuid))
@@ -283,6 +293,7 @@ const Question = (props: QuestionProps) => {
                                 selected={selectedDims}
                                 key={opt.uuid}
                                 opt={opt}
+                                playSound={playSound}
                                 onSelect={opt => handleSelect(opt)}
                                 onUnselect={() => handleUnselect(opt)}
                             />
@@ -306,6 +317,7 @@ type HoverPillProps = {
     onLayout: (width: number, x: number, y: number) => void;
     selected: PillDimension[];
     containerWidth: number;
+    playSound: (id: string) => void;
 }
 const isOverThreshold = (threshold: number, prev: number, curr: number) => {
     return Math.abs(prev + curr - threshold) < 50
@@ -326,10 +338,10 @@ const calcOffsets = (threshold: number) => (prev: {offX: number, offY: number}, 
 }
 
 const HoverPill = (props: HoverPillProps) => {
-    const { opt, onSelect, onUnselect, selected, containerWidth } = props;
+    const { opt, onSelect, onUnselect, selected, containerWidth, playSound } = props;
     const { text, uuid } = opt;
 
-    const { play } = useSoundByte(text.replaceAll(" ", "_"));
+    // const { play } = useSoundByte(text.replaceAll(" ", "_"));
 
     const pillStyle = useAnimatedStyle(() => {
         const widthThreshold = containerWidth - 55
@@ -350,7 +362,7 @@ const HoverPill = (props: HoverPillProps) => {
 
     const onPress = async () => {
         const isSelected = !!selected.find(s => s.option.uuid === uuid);
-        if (!isSelected) await play()
+        if (!isSelected) await playSound(text)
         if (isSelected)
          return onUnselect()
         onSelect(opt)
