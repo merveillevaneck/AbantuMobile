@@ -97,7 +97,7 @@ export default function Page() {
                     return sheet?.current?.expand();
                 }
                 await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                await playCorrect();
+                void playCorrect();
                 //complete(true, opts);
                 setSubmission({correct: true, answer: opts})
                 return sheet?.current?.expand();
