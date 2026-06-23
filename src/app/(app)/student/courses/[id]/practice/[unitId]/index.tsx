@@ -16,7 +16,7 @@ import { cn } from '@/tw/util';
 import { PracticeSessionSummary } from '@/components/practice-session-summary';
 import { getUnitExercises } from '@/server/get-unit-exercises';
 import { Audio } from 'expo-av';
-import { useSoundByte, loadSoundBytes } from '@/hooks/use-soundbyte';
+import { useSoundByte, loadSoundBytes, playBuffer } from '@/hooks/use-soundbyte';
 
 const blobToBase64 = (blob): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -66,7 +66,7 @@ export default function Page() {
 
     // play a preloaded sound by its raw string id (questionContent or option text)
     const sounds = data?.sounds ?? {};
-    const playSound = (id: string) => sounds[id]?.replayAsync();
+    const playSound = (id: string) => { const b = sounds[id]; if (b) playBuffer(b); };
 
     // ponytail: commented out — playCorrect falls back to the module-level bundled-mp3 player above
     // const { play: playCorrect } = useSoundByte("correct tone", { type: "mp3" });

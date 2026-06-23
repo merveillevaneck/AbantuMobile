@@ -1,22 +1,37 @@
 import { apiClient } from "@/server/api/client";
 import { useQuery } from "@tanstack/react-query";
-import { Audio } from 'expo-av';
-import { useEffect } from "react";
 
 type SoundByteOpts = { type: "mp3" | "wav" }
 
-// ponytail: base64 -> object URL via fetch(dataURI).blob(); swap for FS file write later
-const base64ToBlobUri = async (base64: string, type: string) => {
-    const blob = await (await fetch(`data:audio/${type};base64,${base64}`)).blob()
-    return URL.createObjectURL(blob)
+// ponytail: single shared AudioContext; low-latency web playback from pre-decoded buffers
+let ctx: AudioContext | null = null;
+const audioCtx = () => (ctx ??= new (window.AudioContext || (window as any).webkitAudioContext)());
+
+const base64ToArrayBuffer = (base64: string) => {
+    const bin = atob(base64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes.buffer;
 }
 
-export const createSoundByteRef = async (id: string, opts = { type: "wav" }) => {
-    const media = await apiClient.getApimediaaudio({queries: { id: id.replaceAll(" ", "_") }})
-    const uri = await base64ToBlobUri(media?.audio ?? "", opts.type)
-    const { sound } = await Audio.Sound.createAsync({uri})
+// ponytail: pass callbacks AND use the return value so older iOS Safari (no promise-form decodeAudioData) still resolves
+const decode = (data: ArrayBuffer) => new Promise<AudioBuffer>((resolve, reject) => {
+    const ret = audioCtx().decodeAudioData(data, resolve, reject);
+    if (ret && typeof (ret as any).then === "function") (ret as Promise<AudioBuffer>).then(resolve, reject);
+})
 
-    return sound;
+export const createSoundByteRef = async (id: string, _opts = { type: "wav" }) => {
+    const media = await apiClient.getApimediaaudio({queries: { id: id.replaceAll(" ", "_") }})
+    return decode(base64ToArrayBuffer(media?.audio ?? ""))
+}
+
+export const playBuffer = (buffer: AudioBuffer) => {
+    const c = audioCtx();
+    if (c.state === "suspended") c.resume();
+    const src = c.createBufferSource(); // one-shot node, fresh per play
+    src.buffer = buffer;
+    src.connect(c.destination);
+    src.start(0);
 }
 
 export const loadSoundBytes = async (ids: string[], opts = { type: "wav" }) => {
@@ -24,7 +39,7 @@ export const loadSoundBytes = async (ids: string[], opts = { type: "wav" }) => {
         try { return [id, await createSoundByteRef(id, opts)] as const }
         catch { return null } // ponytail: skip missing/failed sounds; playback no-ops on undefined
     }))
-    return Object.fromEntries(entries.filter(Boolean) as [string, Awaited<ReturnType<typeof createSoundByteRef>>][])
+    return Object.fromEntries(entries.filter(Boolean) as [string, AudioBuffer][])
 }
 
 export const useSoundByte = (id: string, opts: SoundByteOpts & {playOnMount?: boolean} = { type: "wav" }) => {
@@ -32,8 +47,7 @@ export const useSoundByte = (id: string, opts: SoundByteOpts & {playOnMount?: bo
         queryKey: ['sound', id],
         queryFn: async () => {
             const soundRef = await createSoundByteRef(id, opts);
-
-            if (opts.playOnMount) await soundRef.playAsync();
+            if (opts.playOnMount) playBuffer(soundRef);
             return soundRef
         },
         retry: false,
@@ -41,14 +55,8 @@ export const useSoundByte = (id: string, opts: SoundByteOpts & {playOnMount?: bo
 
     const play = async () => {
         if (!soundRef) return;
-        await soundRef.playAsync();
+        playBuffer(soundRef);
     }
-
-    useEffect(() => {
-        return () => {
-            if (!!soundRef) soundRef?.unloadAsync();
-        }
-    }, [])
 
     return {
         play,
