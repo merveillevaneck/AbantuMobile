@@ -134,11 +134,11 @@ export default function Page() {
                 // header={!finished ? <PracticeSessionHeader className="md:w-120 md:self-center" progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
                 // containerClassName='flex-1 justify-center items-center'
                 // contentContainerClassName='flex-1 w-full'
-                className="bg-[#232427] flex-1 flex items-stretch flex-col"
+                className="bg-[#232427] flex-1 flex items-stretch flex-col lg-200"
             >
-                {!finished ? <PracticeSessionHeader className="md:self-center m-4 p-2" progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
+                {!finished ? <PracticeSessionHeader className="lg:w-200 md:self-center m-4 p-2" progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
                 <Animated.View
-                    style={{flex: 1, display: 'flex', width: '100%', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center'}}
+                    style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center', backgroundColor: 'red'}}
                     entering={FadeIn}>
                     {finished && (
                         <PracticeSessionSummary completed={completed} onSubmit={() => router.back()} />
@@ -180,6 +180,8 @@ export default function Page() {
                                 paddingHorizontal: 20,
                                 gap: 30,
                             }}>
+                                <View className="flex flex-1 flex-col lg:self-center lg:w-200 bg-amber-200 items-stretch">
+
                             {submission?.correct && (
                                 <>
                                     <Text className="text-4xl text-green-300 font-bold ml-2">Correct!</Text>
@@ -214,6 +216,7 @@ export default function Page() {
                                     if (submission) complete(submission?.correct, submission?.answer);
                                 }}
                             />
+                                </View>
                         </BottomSheetView>
                     </BottomSheet>
 
@@ -254,10 +257,11 @@ const Question = (props: QuestionProps) => {
 
     const selectedDims = selected.map(opt => dimensions.find(dim => dim.option.uuid === opt.uuid))
     return (
-        <View className="flex-1 flex-col items-stretch p-10 pt-0">
+        <View className="flex-1 flex-col items-stretch lg:self-center lg:200 lg:items-center p-10 pt-0 bg-slate-200">
             <Animated.View
                 entering={FadeIn}
-                style={{flex: 1, flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center'}}
+                className="flex flex-1"
+                style={{flex: 1, width: '100%', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center'}}
             >
                 <View className="flex-2 p-5 pt-0 flex flex-col items-stretch">
                     <Text className="text-white text-2xl mb-10">
