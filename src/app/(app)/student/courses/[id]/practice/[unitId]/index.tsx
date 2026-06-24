@@ -112,7 +112,8 @@ export default function Page() {
     if (showLoading) return (
         <Screen key={Date.now()}
             containerClassName='flex items-center justify-center]'
-            contentContainerClassName='flex flex-1 items-center justify-center]'>
+            contentContainerClassName='flex flex-1 items-center justify-center'
+            >
             <LottieView
                 key={Date.now()}
                 ref={animation}
@@ -138,7 +139,7 @@ export default function Page() {
             >
                 {!finished ? <PracticeSessionHeader className="lg:w-200 md:self-center m-4 p-2" progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
                 <Animated.View
-                    style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center', backgroundColor: 'red'}}
+                    style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center'}}
                     entering={FadeIn}>
                     {finished && (
                         <PracticeSessionSummary completed={completed} onSubmit={() => router.back()} />
@@ -180,7 +181,7 @@ export default function Page() {
                                 paddingHorizontal: 20,
                                 gap: 30,
                             }}>
-                                <View className="flex flex-1 flex-col lg:self-center lg:w-200 bg-amber-200 items-stretch">
+                                <View className="flex flex-1 flex-col lg:self-center lg:w-200 items-stretch">
 
                             {submission?.correct && (
                                 <>
@@ -257,7 +258,7 @@ const Question = (props: QuestionProps) => {
 
     const selectedDims = selected.map(opt => dimensions.find(dim => dim.option.uuid === opt.uuid))
     return (
-        <View className="flex-1 flex-col items-stretch lg:self-center lg:200 lg:items-center p-10 pt-0 bg-slate-200">
+        <View className="flex-1 flex-col items-stretch lg:self-center lg:200 lg:items-center p-10 pt-0">
             <Animated.View
                 entering={FadeIn}
                 className="flex flex-1"
