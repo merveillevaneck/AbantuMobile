@@ -147,10 +147,10 @@ export default function Page() {
                     {finished && (
                         <PracticeSessionSummary completed={completed} onSubmit={() => router.back()} />
                     )}
-                    <Text className="text-white">audio file log:</Text>
-                    {Object.keys(sounds).map(k => (
+                    {/* <Text className="text-white">audio file log:</Text> */}
+                    {/* {Object.keys(sounds).map(k => (
                         <Text key={k} className="text-white">{k}: {!!sounds[k] ? "present" : ""}</Text>
-                    ))}
+                    ))} */}
                     {!!current && (
                         <Question key={current.id} exercise={current} onSubmit={answer => handleCheck(answer)} playSound={playSound} />
                     )}
