@@ -13,6 +13,7 @@ export const createSoundByteRef = async (id: string, _opts = { type: "wav" }) =>
 
     const audioUrl = URL.createObjectURL(blob);
     const audio = new Audio(audioUrl);
+    audio.preload = "auto";
 
     return audio;
 }
