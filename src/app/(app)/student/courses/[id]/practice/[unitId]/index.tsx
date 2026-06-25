@@ -55,7 +55,7 @@ export default function Page() {
             if (unitId === undefined) return;
             const result = await getUnitExercises(Number(unitId));
 
-            const ids = result.flatMap(ex => [ex.questionContent, ...ex.options.map(o => o.text)]);
+            const ids = result.flatMap(ex => ex.questionContent);
             const sounds = await loadSoundBytes(ids);
             setSounds(sounds);
 
@@ -67,10 +67,8 @@ export default function Page() {
         refetchOnWindowFocus: false,
     })
 
-    // play a preloaded sound by its raw string id (questionContent or option text)
     const playSound = (id: string) => { const b = sounds[id]; if (b) playAudio(b); };
 
-    // ponytail: commented out — playCorrect falls back to the module-level bundled-mp3 player above
     const { play: playCorrect } = useSoundByte("correct tone", { type: "wav" });
 
     const progress = useMemo(() => {
@@ -298,7 +296,7 @@ const Question = (props: QuestionProps) => {
                                 selected={selectedDims}
                                 key={opt.uuid}
                                 opt={opt}
-                                playSound={playSound}
+                                // playSound={playSound}
                                 onSelect={opt => handleSelect(opt)}
                                 onUnselect={() => handleUnselect(opt)}
                             />
@@ -322,7 +320,7 @@ type HoverPillProps = {
     onLayout: (width: number, x: number, y: number) => void;
     selected: PillDimension[];
     containerWidth: number;
-    playSound: (id: string) => void;
+    playSound?: (id: string) => void;
 }
 const isOverThreshold = (threshold: number, prev: number, curr: number) => {
     return Math.abs(prev + curr - threshold) < 50
@@ -343,10 +341,10 @@ const calcOffsets = (threshold: number) => (prev: {offX: number, offY: number}, 
 }
 
 const HoverPill = (props: HoverPillProps) => {
-    const { opt, onSelect, onUnselect, selected, containerWidth, playSound } = props;
+    const { opt, onSelect, onUnselect, selected, containerWidth } = props;
     const { text, uuid } = opt;
 
-    // const { play } = useSoundByte(text.replaceAll(" ", "_"));
+    const { play } = useSoundByte(text);
 
     const pillStyle = useAnimatedStyle(() => {
         const widthThreshold = containerWidth - 55
@@ -367,7 +365,7 @@ const HoverPill = (props: HoverPillProps) => {
 
     const onPress = async () => {
         const isSelected = !!selected.find(s => s.option.uuid === uuid);
-        if (!isSelected) playSound(text)
+        if (!isSelected) play()
         if (isSelected)
          return onUnselect()
         onSelect(opt)

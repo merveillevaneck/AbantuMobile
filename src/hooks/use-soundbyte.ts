@@ -46,7 +46,7 @@ export const playBuffer = (audio: HTMLAudioElement) => {
     audio.play();
 }
 
-type Playable = {audioBuffer: AudioBuffer, play: () => Promise<void>}
+export type Playable = {audioBuffer: AudioBuffer, play: () => Promise<void>}
 export const loadSoundBytes = async (ids: string[], opts = { type: "wav" }) => {
     const entries = await Promise.all(ids.map(async id => {
         try { return [id, await createSoundByteRef(id, opts)] as const }
