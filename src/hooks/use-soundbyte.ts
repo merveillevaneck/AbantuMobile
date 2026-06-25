@@ -10,22 +10,26 @@ export const blobToHTMLAudio = (blob: Blob) => {
     return audio;
 }
 
-export const blobToSourceNode = async (blob: Blob) => {
+export const blobToAudioBuff = async (blob: Blob) => {
     const audioContext = new window.AudioContext();
 
     const arrayBuffer = await blob.arrayBuffer();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
-    const sourceNode = audioContext.createBufferSource();
-    sourceNode.buffer = audioBuffer;
-
-    sourceNode.connect(audioContext.destination);
-    return sourceNode;
+    return {
+        play: async () => {
+            const sourcenode = audioContext.createBufferSource();
+            sourcenode.buffer = audioBuffer;
+            sourcenode.connect(audioContext.destination);
+            sourcenode.start(0);
+        },
+        audioBuffer: audioBuffer,
+    };
 }
 
-export const playAudio = async (source: AudioBufferSourceNode) => {
-    source.start(0);
-}
+export const playAudio = async (audio: Playable) => {
+    audio.play();
+}   
 
 export const createSoundByteRef = async (id: string, _opts = { type: "wav" }) => {
     // const media = await apiClient.getApimediaaudio({queries: { id: id.replaceAll(" ", "_") }})
@@ -35,24 +39,20 @@ export const createSoundByteRef = async (id: string, _opts = { type: "wav" }) =>
 
     const blob = await response.blob();
 
-    const audioUrl = URL.createObjectURL(blob);
-    const audio = new Audio(audioUrl);
-    audio.preload = "auto";
-
-    // return blobToHTMLAudio(blob);
-    return blobToSourceNode(blob);
+    return blobToAudioBuff(blob);
 }
 
 export const playBuffer = (audio: HTMLAudioElement) => {
     audio.play();
 }
 
+type Playable = {audioBuffer: AudioBuffer, play: () => Promise<void>}
 export const loadSoundBytes = async (ids: string[], opts = { type: "wav" }) => {
     const entries = await Promise.all(ids.map(async id => {
         try { return [id, await createSoundByteRef(id, opts)] as const }
         catch { return null } // ponytail: skip missing/failed sounds; playback no-ops on undefined
     }))
-    return Object.fromEntries(entries.filter(Boolean) as [string, AudioBufferSourceNode][])
+    return Object.fromEntries(entries.filter(Boolean) as [string, Playable][])
 }
 
 export const useSoundByte = (id: string, opts: SoundByteOpts & {playOnMount?: boolean} = { type: "wav" }) => {
