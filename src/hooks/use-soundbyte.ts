@@ -21,8 +21,15 @@ const decode = (data: ArrayBuffer) => new Promise<AudioBuffer>((resolve, reject)
 })
 
 export const createSoundByteRef = async (id: string, _opts = { type: "wav" }) => {
-    const media = await apiClient.getApimediaaudio({queries: { id: id.replaceAll(" ", "_") }})
-    return decode(base64ToArrayBuffer(media?.audio ?? ""))
+    // const media = await apiClient.getApimediaaudio({queries: { id: id.replaceAll(" ", "_") }})
+    const response = await fetch("http://localhost:3001/api/media/audio/blob?id=correct_tone", {
+        method: "GET",
+    })
+
+    console.log('response', response)
+
+    const blob = await response.blob();
+    return await decode(await blob.arrayBuffer())
 }
 
 export const playBuffer = (buffer: AudioBuffer) => {
@@ -47,7 +54,7 @@ export const useSoundByte = (id: string, opts: SoundByteOpts & {playOnMount?: bo
         queryKey: ['sound', id],
         queryFn: async () => {
             const soundRef = await createSoundByteRef(id, opts);
-            // if (opts.playOnMount) playBuffer(soundRef);
+            if (opts.playOnMount) playBuffer(soundRef);
             return soundRef
         },
         retry: false,

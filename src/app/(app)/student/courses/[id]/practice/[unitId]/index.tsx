@@ -16,7 +16,7 @@ import { cn } from '@/tw/util';
 import { PracticeSessionSummary } from '@/components/practice-session-summary';
 import { getUnitExercises } from '@/server/get-unit-exercises';
 import { Audio } from 'expo-av';
-import {  loadSoundBytes, playBuffer } from '@/hooks/use-soundbyte';
+import {  loadSoundBytes, playBuffer, useSoundByte } from '@/hooks/use-soundbyte';
 
 const blobToBase64 = (blob): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -56,8 +56,8 @@ export default function Page() {
             const result = await getUnitExercises(Number(unitId));
 
             const ids = result.flatMap(ex => [ex.questionContent, ...ex.options.map(o => o.text)]);
-            const sounds = await loadSoundBytes(ids);
-            setSounds(sounds);
+            // const sounds = await loadSoundBytes(ids);
+            // setSounds(sounds);
 
             start(result);
             setShowLoader(false);
@@ -243,7 +243,7 @@ const Question = (props: QuestionProps) => {
     const [containerWidth, setContainerWidth] = useState(0);
     const [dimensions, setDimensions] = useState<PillDimension[]>([]);
 
-    // useSoundByte(exercise.questionContent, { type: "wav", playOnMount: true });
+    useSoundByte(exercise.questionContent, { type: "wav", playOnMount: true });
     useEffect(() => { playSound(exercise.questionContent); }, [exercise.questionContent]);
 
 
@@ -363,7 +363,7 @@ const HoverPill = (props: HoverPillProps) => {
 
     const onPress = async () => {
         const isSelected = !!selected.find(s => s.option.uuid === uuid);
-        if (!isSelected) await playSound(text)
+        if (!isSelected) playSound(text)
         if (isSelected)
          return onUnselect()
         onSelect(opt)
