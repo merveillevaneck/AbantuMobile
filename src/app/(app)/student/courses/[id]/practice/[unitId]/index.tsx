@@ -47,7 +47,7 @@ export default function Page() {
     const { start, complete, current, exercises, completed } = usePracticeStore();
 
     const [submission, setSubmission] = useState<{correct: boolean, answer: string[]} | null>(null);
-    const [sounds, setSounds] = useState<Record<string, AudioBufferSourceNode>>({});
+    const [sounds, setSounds] = useState<Record<string, HTMLAudioElement>>({});
 
     useQuery({
         queryKey: ["exercises", unitId],

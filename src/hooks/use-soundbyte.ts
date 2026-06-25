@@ -30,19 +30,14 @@ export const createSoundByteRef = async (id: string, _opts = { type: "wav" }) =>
 
     const blob = await response.blob();
 
-    const decoded = await decode(await blob.arrayBuffer())
-    const buffer = decoded;
-    const c: AudioContext = audioCtx();
-    if (c.state === "suspended") c.resume();
-    const src = c.createBufferSource(); // one-shot node, fresh per play
-    src.buffer = buffer;
-    src.connect(c.destination);
+    const audioUrl = URL.createObjectURL(blob);
+    const audio = new Audio(audioUrl);
 
-    return src;
+    return audio;
 }
 
-export const playBuffer = (src: AudioBufferSourceNode) => {
-    src.start(0);
+export const playBuffer = (audio: HTMLAudioElement) => {
+    audio.play();
 }
 
 export const loadSoundBytes = async (ids: string[], opts = { type: "wav" }) => {
@@ -50,7 +45,7 @@ export const loadSoundBytes = async (ids: string[], opts = { type: "wav" }) => {
         try { return [id, await createSoundByteRef(id, opts)] as const }
         catch { return null } // ponytail: skip missing/failed sounds; playback no-ops on undefined
     }))
-    return Object.fromEntries(entries.filter(Boolean) as [string, AudioBufferSourceNode][])
+    return Object.fromEntries(entries.filter(Boolean) as [string, HTMLAudioElement][])
 }
 
 export const useSoundByte = (id: string, opts: SoundByteOpts & {playOnMount?: boolean} = { type: "wav" }) => {
