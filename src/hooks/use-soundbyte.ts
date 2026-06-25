@@ -1,4 +1,4 @@
-import { apiClient } from "@/server/api/client";
+import { API, apiClient } from "@/server/api/client";
 import { useQuery } from "@tanstack/react-query";
 
 type SoundByteOpts = { type: "mp3" | "wav" }
@@ -22,22 +22,26 @@ const decode = (data: ArrayBuffer) => new Promise<AudioBuffer>((resolve, reject)
 
 export const createSoundByteRef = async (id: string, _opts = { type: "wav" }) => {
     // const media = await apiClient.getApimediaaudio({queries: { id: id.replaceAll(" ", "_") }})
-    const response = await fetch("http://localhost:3001/api/media/audio/blob?id=correct_tone", {
+    const response = await fetch(API + "/api/media/audio/blob?id=" + id.replaceAll(" ", "_"), {
         method: "GET",
     })
 
     console.log('response', response)
 
     const blob = await response.blob();
-    return await decode(await blob.arrayBuffer())
-}
 
-export const playBuffer = (buffer: AudioBuffer) => {
-    const c = audioCtx();
+    const decoded = await decode(await blob.arrayBuffer())
+    const buffer = decoded;
+    const c: AudioContext = audioCtx();
     if (c.state === "suspended") c.resume();
     const src = c.createBufferSource(); // one-shot node, fresh per play
     src.buffer = buffer;
     src.connect(c.destination);
+
+    return src;
+}
+
+export const playBuffer = (src: AudioBufferSourceNode) => {
     src.start(0);
 }
 
@@ -46,7 +50,7 @@ export const loadSoundBytes = async (ids: string[], opts = { type: "wav" }) => {
         try { return [id, await createSoundByteRef(id, opts)] as const }
         catch { return null } // ponytail: skip missing/failed sounds; playback no-ops on undefined
     }))
-    return Object.fromEntries(entries.filter(Boolean) as [string, AudioBuffer][])
+    return Object.fromEntries(entries.filter(Boolean) as [string, AudioBufferSourceNode][])
 }
 
 export const useSoundByte = (id: string, opts: SoundByteOpts & {playOnMount?: boolean} = { type: "wav" }) => {

@@ -47,7 +47,7 @@ export default function Page() {
     const { start, complete, current, exercises, completed } = usePracticeStore();
 
     const [submission, setSubmission] = useState<{correct: boolean, answer: string[]} | null>(null);
-    const [sounds, setSounds] = useState<Record<string, AudioBuffer>>({});
+    const [sounds, setSounds] = useState<Record<string, AudioBufferSourceNode>>({});
 
     useQuery({
         queryKey: ["exercises", unitId],
@@ -56,8 +56,8 @@ export default function Page() {
             const result = await getUnitExercises(Number(unitId));
 
             const ids = result.flatMap(ex => [ex.questionContent, ...ex.options.map(o => o.text)]);
-            // const sounds = await loadSoundBytes(ids);
-            // setSounds(sounds);
+            const sounds = await loadSoundBytes(ids);
+            setSounds(sounds);
 
             start(result);
             setShowLoader(false);
@@ -243,7 +243,7 @@ const Question = (props: QuestionProps) => {
     const [containerWidth, setContainerWidth] = useState(0);
     const [dimensions, setDimensions] = useState<PillDimension[]>([]);
 
-    useSoundByte(exercise.questionContent, { type: "wav", playOnMount: true });
+    // useSoundByte(exercise.questionContent, { type: "wav", playOnMount: true });
     useEffect(() => { playSound(exercise.questionContent); }, [exercise.questionContent]);
 
 
