@@ -3,30 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 
 type SoundByteOpts = { type: "mp3" | "wav" }
 
-// ponytail: single shared AudioContext; low-latency web playback from pre-decoded buffers
-let ctx: AudioContext | null = null;
-const audioCtx = () => (ctx ??= new (window.AudioContext || (window as any).webkitAudioContext)());
-
-const base64ToArrayBuffer = (base64: string) => {
-    const bin = atob(base64);
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return bytes.buffer;
-}
-
-// ponytail: pass callbacks AND use the return value so older iOS Safari (no promise-form decodeAudioData) still resolves
-const decode = (data: ArrayBuffer) => new Promise<AudioBuffer>((resolve, reject) => {
-    const ret = audioCtx().decodeAudioData(data, resolve, reject);
-    if (ret && typeof (ret as any).then === "function") (ret as Promise<AudioBuffer>).then(resolve, reject);
-})
-
 export const createSoundByteRef = async (id: string, _opts = { type: "wav" }) => {
     // const media = await apiClient.getApimediaaudio({queries: { id: id.replaceAll(" ", "_") }})
     const response = await fetch(API + "/api/media/audio/blob?id=" + id.replaceAll(" ", "_"), {
         method: "GET",
     })
-
-    console.log('response', response)
 
     const blob = await response.blob();
 
