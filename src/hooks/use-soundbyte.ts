@@ -1,7 +1,7 @@
 import { API, apiClient } from "@/server/api/client";
 import { useQuery } from "@tanstack/react-query";
 
-type SoundByteOpts = { type: "mp3" | "wav" }
+type SoundByteOpts = { type: "mp3" | "wav" | "flac" }
 
 export const blobToHTMLAudio = (blob: Blob) => {
     const audioUrl = URL.createObjectURL(blob);
@@ -31,7 +31,7 @@ export const playAudio = async (audio: Playable) => {
     audio.play();
 }   
 
-export const createSoundByteRef = async (id: string, _opts = { type: "wav" }) => {
+export const createSoundByteRef = async (id: string, _opts = { type: "flac" }) => {
     // const media = await apiClient.getApimediaaudio({queries: { id: id.replaceAll(" ", "_") }})
     const response = await fetch(API + "/api/media/audio/blob?id=" + id.replaceAll(" ", "_"), {
         method: "GET",
@@ -47,7 +47,7 @@ export const playBuffer = (audio: HTMLAudioElement) => {
 }
 
 export type Playable = {audioBuffer: AudioBuffer, play: () => Promise<void>}
-export const loadSoundBytes = async (ids: string[], opts = { type: "wav" }) => {
+export const loadSoundBytes = async (ids: string[], opts = { type: "flac" }) => {
     const entries = await Promise.all(ids.map(async id => {
         try { return [id, await createSoundByteRef(id, opts)] as const }
         catch { return null } // ponytail: skip missing/failed sounds; playback no-ops on undefined
@@ -55,7 +55,7 @@ export const loadSoundBytes = async (ids: string[], opts = { type: "wav" }) => {
     return Object.fromEntries(entries.filter(Boolean) as [string, Playable][])
 }
 
-export const useSoundByte = (id: string, opts: SoundByteOpts & {playOnMount?: boolean} = { type: "wav" }) => {
+export const useSoundByte = (id: string, opts: SoundByteOpts & {playOnMount?: boolean} = { type: "flac" }) => {
     const { data: soundRef, isPending } = useQuery({
         queryKey: ['sound', id],
         queryFn: async () => {
