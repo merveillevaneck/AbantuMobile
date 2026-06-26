@@ -31,13 +31,6 @@ const blobToBase64 = (blob): Promise<string> => {
     })
 }
 
-
-const playCorrect = async () => {
-    const {sound} = await Audio.Sound.createAsync(require("../../../../../../../correct-tone.mp3"))
-    await sound.playAsync();
-}
-
-
 export default function Page() {
     const { unitId } = useLocalSearchParams<{id: string, unitId: string}>();
 
@@ -69,7 +62,7 @@ export default function Page() {
 
     const playSound = (id: string) => { const b = sounds[id]; if (b) playAudio(b); };
 
-    const { play: playCorrect } = useSoundByte("correct tone", { type: "wav" });
+    const { play: playCorrect } = useSoundByte("correct tone", { type: "mp3" });
 
     const progress = useMemo(() => {
         const total = (completed.length + exercises.length) + (!!current ? 1 : 0)
@@ -344,7 +337,7 @@ const HoverPill = (props: HoverPillProps) => {
     const { opt, onSelect, onUnselect, selected, containerWidth } = props;
     const { text, uuid } = opt;
 
-    const { play } = useSoundByte(text);
+    const { play } = useSoundByte(text, {});
 
     const pillStyle = useAnimatedStyle(() => {
         const widthThreshold = containerWidth - 55
