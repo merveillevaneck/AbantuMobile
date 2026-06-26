@@ -49,7 +49,7 @@ export default function Page() {
             const result = await getUnitExercises(Number(unitId));
 
             const ids = result.flatMap(ex => ex.questionContent);
-            const sounds = await loadSoundBytes(ids);
+            const sounds = await loadSoundBytes(ids, {});
             setSounds(sounds);
 
             start(result);
