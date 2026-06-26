@@ -31,7 +31,7 @@ export const playAudio = async (audio: Playable) => {
     audio.play();
 }   
 
-export const createSoundByteRef = async (id: string, opts: SoundByteOpts) => {
+export const createSoundByteRef = async (id: string, opts: SoundByteOpts = {}) => {
     // const media = await apiClient.getApimediaaudio({queries: { id: id.replaceAll(" ", "_") }})
     const response = await fetch(`${API}/api/media/audio/blob?id=${id.replaceAll(" ", "_")}${opts.type ? `&type=${opts.type}` : ""}`, {
         method: "GET",
@@ -47,7 +47,7 @@ export const playBuffer = (audio: HTMLAudioElement) => {
 }
 
 export type Playable = {audioBuffer: AudioBuffer, play: () => Promise<void>}
-export const loadSoundBytes = async (ids: string[], opts: SoundByteOpts) => {
+export const loadSoundBytes = async (ids: string[], opts: SoundByteOpts = {}) => {
     const entries = await Promise.all(ids.map(async id => {
         try { return [id, await createSoundByteRef(id, opts)] as const }
         catch { return null } // ponytail: skip missing/failed sounds; playback no-ops on undefined
