@@ -99,6 +99,11 @@ export default function Page() {
 
     const finished = useMemo(() => !current && !!completed.length && !exercises.length, [current, completed, exercises]);
 
+    const firstAnswer = current?.answers?.[0]?.text;
+    const generatedMessage = Array.isArray(firstAnswer) ? firstAnswer.join(" ") : firstAnswer;
+    const incorrectMessageIsGenerated = !current?.incorrectMessage && !!generatedMessage;
+    const incorrectMessage = current?.incorrectMessage || generatedMessage;
+
     useLayoutEffect(() => {
         animation?.current?.reset();
     }, [])
@@ -180,15 +185,20 @@ export default function Page() {
                                     <Text className="text-4xl text-green-300 font-bold ml-2">Correct!</Text>
                                     {/* TODO: add correct and incorrect hint text here! */}
                                     {!!current && current?.correctMessage && (
-                                        <Text className="text-2xl text-green-300">{current?.correctMessage}</Text>
+                                        <Text className="text-2xl text-green-300 ml-2">{current?.correctMessage}</Text>
                                     )}
                                 </>
                             )}
                             {!submission?.correct && (
                                 <>
                                     <Text className="text-4xl font-bold text-red-300">Oops!</Text>
-                                    {!!current && current?.incorrectMessage && (
-                                        <Text className="text-2xl text-red-400">{current?.incorrectMessage}</Text>
+                                    {!!current && !!incorrectMessage && (
+                                        <View className="ml-2 gap-2">
+                                            {incorrectMessageIsGenerated && (
+                                                <Text className="text-2xl font-normal text-green-200">Answer</Text>
+                                            )}
+                                            <Text className="text-2xl font-semibold text-green-200">{incorrectMessage}</Text>
+                                        </View>
                                     )}
                                 </>
                             )}

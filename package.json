@@ -45,6 +45,7 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-native": "0.83.6",
+    "react-native-audio-api": "^0.12.2",
     "react-native-css": "^3.0.0",
     "react-native-gesture-handler": "^2.31.2",
     "react-native-keyboard-controller": "^1.21.7",
