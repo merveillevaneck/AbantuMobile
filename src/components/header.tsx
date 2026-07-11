@@ -15,7 +15,7 @@ export const Header = (props: HeaderProps) => {
     return (
         <View
             className={cn(
-                "flex flex-row items-stretch shadow-lg bg-[#399653] pt-16 px-4",
+                "flex flex-row items-stretch shadow-lg bg-[#232427] pt-16 web:pt-4 px-4",
                 className,
             )}
         >
@@ -32,7 +32,7 @@ export const Header = (props: HeaderProps) => {
                     </Pressable>)}
                 <View className="flex flex-row flex-1 items-center h-12">
                     {!!title && typeof title === "string" &&
-                        <Text className="text-white font-semibold text-xl">
+                        <Text className="text-white font-semibold text-sm xs:text-lg sm:text-xl">
                             {title}
                         </Text>
                     }

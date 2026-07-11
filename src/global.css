@@ -10,6 +10,10 @@
     --font-rounded: "SF Pro Rounded", "Hiragino Maru Gothic ProN", Meiryo,
       "MS PGothic", sans-serif;
 
+    /* Breakpoints (defaults start at sm=640px, above phone widths, so add
+       phone-range steps to allow responsive text sizing on real devices) */
+    --breakpoint-xs: 24rem;  /* 384px */
+    --breakpoint-sm: 30rem;  /* 480px */
   }
 }
 

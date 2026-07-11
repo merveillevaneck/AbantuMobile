@@ -33,32 +33,32 @@ export const UnitItem = (props: UnitItemProps) => {
         $onPress?.(unit);
     }
     return (
-        <View 
+        <View
             // disabled={!props.onPressItem}
             className={
                 cn(
-                    "flex flex-col items-stretch rounded-4xl bg-[#399653] shadow-md p-4 px-8 relative",
+                    "flex flex-row items-stretch gap-4 rounded-4xl bg-[#399653] shadow-md p-4 px-8 relative",
                     className
                 )
             }
         >
-            <View className="flex flex-row items-start justify-between mb-2">
-                <View className="flex flex-2 flex-row items-center gap-2">
-                    <Text className="text-white text-2xl font-semibold">{unit.name}</Text>
+            <View className="flex flex-2 flex-col justify-start">
+                <View className="flex flex-row items-center gap-2 mb-2">
+                    <Text className="shrink text-white text-xs xs:text-base sm:text-xl font-semibold">{unit.name}</Text>
                     <Tag text={"level " + unit.level} />
                 </View>
-                <View className="flex flex-col gap-2 items-center flex-1">
-                    {typeof progress === "number" && <ProgressBar progress={progress} className="w-full" />}
-                    {typeof progress === "undefined" && (
-                        action
-                    )}
-                {!!props.onPress && <Button className="w-full" text={props.actionText ?? "practice"} onPress={onPress} />}
-                </View>
+                <Text className="text-sm text-[#BAFFCA] mt-4">
+                    {unit.description}
+                </Text>
             </View>
 
-            <Text className="text-sm  text-[#BAFFCA] mt-4">
-                {unit.description}
-            </Text>
+            <View className="flex flex-1 flex-col justify-center gap-4 items-center">
+                {!!props.onPress && <Button className="w-full" text={props.actionText ?? "practice"} onPress={onPress} />}
+                {typeof progress === "number" && <ProgressBar progress={progress} className="self-stretch mx-4" />}
+                {typeof progress === "undefined" && (
+                    action
+                )}
+            </View>
 
         </View>
     )

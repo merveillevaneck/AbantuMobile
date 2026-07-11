@@ -40,15 +40,19 @@ export default function Page() {
           onBack={() => router.back()}
         />
       }
-      containerClassName="gap-4 pb-10 relative"
+      className="items-center"
+      containerClassName="gap-4 pb-10 relative w-full flex-1"
+      contentContainerClassName="flex flex-col gap-4 px-4 items-center"
     >
-        {data?.units?.map(unit => (
-            <UnitItem
-                unit={unit}
-                key={unit.id}
-            />
-        ))}
-        <Text className="text-white font-semibold">units go here</Text>
+        <View className="w-full max-w-[500px] flex flex-col gap-4">
+            {data?.units?.map(unit => (
+                <UnitItem
+                    unit={unit}
+                    key={unit.id}
+                />
+            ))}
+            <Text className="text-white font-semibold">units go here</Text>
+        </View>
     </Screen>
   );
 }

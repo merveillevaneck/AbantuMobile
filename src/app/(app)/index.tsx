@@ -6,7 +6,7 @@ import { useGetApiCourses, useGetApiStudentCourses } from "@/server/api";
 import { router } from "expo-router";
 import { Button } from "@/components/button";
 import { useTokenStore } from "@/store/token";
-import { AntDesign, FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { MyCoursesDisplay } from "@/components/my-courses-display";
 import { useQuery } from "@tanstack/react-query";
 import { getMyCourses, myCoursesKey } from "@/server/get-my-courses";
@@ -37,7 +37,14 @@ export default function Page() {
       header={
         <Header
           title="My Courses"
-          right={<AntDesign onPress={() => clear()} name="logout" size={24} color="white" />}
+          right={
+            <Pressable
+              onPress={() => clear()}
+              className="transition-transform duration-150 hover:scale-110 active:scale-95"
+            >
+              <Ionicons name="log-out-outline" size={28} color="white" />
+            </Pressable>
+          }
         />
       }
       containerClassName="gap-4 pb-10 relative flex justify-center items-center"
@@ -52,19 +59,28 @@ export default function Page() {
       header={
         <Header
           title="My Courses"
-          right={<AntDesign onPress={() => clear()} name="logout" size={24} color="white" />}
+          right={
+            <Pressable
+              onPress={() => clear()}
+              className="transition-transform duration-150 hover:scale-110 active:scale-95"
+            >
+              <Ionicons name="log-out-outline" size={28} color="white" />
+            </Pressable>
+          }
         />
       }
-      containerClassName="gap-4 pb-10 relative"
+      containerClassName="gap-4 pb-10"
+      floating={
+        <View className="absolute bottom-20 right-10">
+          <Button
+            className="p-4 rounded-full"
+            text={<FontAwesome name="plus" color="white"  size={24} />}
+            onPress={navigateToAvailableCourses}
+          />
+        </View>
+      }
     >
       <MyCoursesDisplay courses={data} />
-      <View className="absolute bottom-20 right-10">
-        <Button
-          className="p-4 rounded-full"
-          text={<FontAwesome name="plus" color="white"  size={24} />}
-          onPress={navigateToAvailableCourses}
-        />
-      </View>
     </Screen>
   );
 }

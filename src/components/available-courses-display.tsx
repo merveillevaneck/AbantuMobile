@@ -1,7 +1,8 @@
 import { ResponseOf } from "@/server/api/responses";
 import { cn } from "@/tw/util";
-import { ActivityIndicator, ScrollView } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { CourseItem } from "./course-item";
+import { groupCoursesByLanguage } from "./group-courses-by-language";
 import { router } from "expo-router";
 import { Button } from "./button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -49,19 +50,26 @@ export const AvailableCoursesDisplay = (props: AvailableCoursesDisplayProps) => 
                 className,
             )}
             contentContainerClassName={cn(
-                "px-5 flex flex-col items-stretch gap-8",
+                "px-5 flex flex-col items-center gap-8",
                 contentContainerClassName,
             )}
         >
-            {courses?.map(course => (
-                <CourseItem
-                    key={course.id}
-                    course={course}
-                    onPress={() => navigateToCourseSummary(course.id)}
-                    subscribeable
-                    onSubscribe={() => router.back()}
-                />
-            ))}
+            <View className="w-full max-w-[500px] flex flex-col gap-8">
+                {groupCoursesByLanguage(courses).map(group => (
+                    <View key={group.language} className="flex flex-col items-stretch gap-4">
+                        <Text className="text-white text-2xl font-bold">{group.language}</Text>
+                        {group.courses.map(course => (
+                            <CourseItem
+                                key={course.id}
+                                course={course}
+                                onPress={() => navigateToCourseSummary(course.id)}
+                                subscribeable
+                                onSubscribe={() => router.back()}
+                            />
+                        ))}
+                    </View>
+                ))}
+            </View>
         </ScrollView>
     )
 }

@@ -7,15 +7,17 @@ type ScreenProps = {
     containerClassName?: string;
     contentContainerClassName?: string;
     children?: React.ReactNode;
+    floating?: React.ReactNode;
 }
 
 export const Screen = (props: ScreenProps) => {
-    const { 
+    const {
         header,
         className,
         containerClassName,
         contentContainerClassName,
         children,
+        floating,
     } = props;
 
     return (
@@ -39,6 +41,7 @@ export const Screen = (props: ScreenProps) => {
             >
                 {children}
             </ScrollView>
+            {floating}
         </View>
     )
 }

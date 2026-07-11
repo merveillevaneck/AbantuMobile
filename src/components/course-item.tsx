@@ -1,7 +1,6 @@
 import { ActivityIndicator, Pressable, Text, View } from "react-native"
 import { cn } from '@/tw/util';
 import { ProgressBar } from "./progress-bar";
-import { Tag } from "./tag";
 import { ResponseOf } from "@/server/api/responses";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { subscribeToCourse, subscribeToCourseKey } from "@/server/subscribe-to-course";
@@ -71,10 +70,12 @@ export const CourseItem = (props: CourseItemProps) => {
                     <ActivityIndicator color="white" size={18} />
                 )}
             </View>
-            <View className="flex flex-row items-center justify-between">
-                <Tag text={course.language} />
+            <View className="flex flex-row items-center justify-between gap-4">
+                {!!course.description && (
+                    <Text className="shrink text-[#BAFFCA] text-md">{course.description}</Text>
+                )}
                 {!!course.creator && (
-                    <Text className="text-[#BAFFCA] text-md">{course.creator?.firstname}</Text>
+                    <Text className="shrink-0 text-[#BAFFCA] text-md">{course.creator?.firstname}</Text>
                 )}
             </View>
         </Pressable>

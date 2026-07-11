@@ -1,7 +1,8 @@
 import { ResponseOf } from "@/server/api/responses";
 import { cn } from "@/tw/util";
-import { ScrollView } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { CourseItem } from "./course-item";
+import { groupCoursesByLanguage } from "./group-courses-by-language";
 import { router } from "expo-router";
 import { ExpoContextMenu } from '@appandflow/expo-context-menu'
 import { getApiStudentCoursesKey, useDeleteApiStudentCourse } from "@/server/api";
@@ -49,27 +50,34 @@ export const MyCoursesDisplay = (props: MyCoursesDisplayProps) => {
                 className,
             )}
             contentContainerClassName={cn(
-                "px-5 flex flex-col items-stretch gap-8",
+                "px-5 flex flex-col items-center gap-8",
                 contentContainerClassName,
             )}
         >
-            {courses?.map(course => (
-                <ExpoContextMenu
-                    key={course.id}
-                    menuItems={[
-                        {
-                            title: "Unsubcribe",
-                            onPress: () => unsub(course.id),
-                        }
-                    ]}
-                >
-                    <CourseItem
-                        course={course}
-                        onPress={() => navigateToCourseSummary(course.id)}
-                        progress={0.5}
-                    />
-                </ExpoContextMenu>
-            ))}
+            <View className="w-full max-w-[500px] flex flex-col gap-8">
+                {groupCoursesByLanguage(courses).map(group => (
+                    <View key={group.language} className="flex flex-col items-stretch gap-4">
+                        <Text className="text-white text-2xl font-bold">{group.language}</Text>
+                        {group.courses.map(course => (
+                            <ExpoContextMenu
+                                key={course.id}
+                                menuItems={[
+                                    {
+                                        title: "Unsubcribe",
+                                        onPress: () => unsub(course.id),
+                                    }
+                                ]}
+                            >
+                                <CourseItem
+                                    course={course}
+                                    onPress={() => navigateToCourseSummary(course.id)}
+                                    progress={0.5}
+                                />
+                            </ExpoContextMenu>
+                        ))}
+                    </View>
+                ))}
+            </View>
         </ScrollView>
     )
 }

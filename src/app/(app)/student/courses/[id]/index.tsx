@@ -49,16 +49,18 @@ export default function Page() {
       }
       className="items-center"
       containerClassName="gap-4 relative w-full flex-1"
-      contentContainerClassName="flex flex-col gap-4 px-4 max-w-800"
+      contentContainerClassName="flex flex-col px-4 items-center"
     >
-        {data?.units?.map(unit => (
-            <UnitItem
-                unit={unit}
-                key={unit.id}
-                progress={0.5}
-                onPress={() => handlePractice(unit)}
-            />
-        ))}
+        <View className="w-full max-w-[500px] flex flex-col gap-4">
+            {data?.units?.map(unit => (
+                <UnitItem
+                    unit={unit}
+                    key={unit.id}
+                    progress={0.5}
+                    onPress={() => handlePractice(unit)}
+                />
+            ))}
+        </View>
     </Screen>
   );
 }

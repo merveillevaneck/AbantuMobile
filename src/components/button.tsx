@@ -23,7 +23,7 @@ export const Button = (props: ButtonProps) => {
             {!isLoading && typeof text === "string" && (
                 <Text
                     className={cn(
-                        "text-white font-semibold text-sm",
+                        "text-white font-semibold text-[10px] xs:text-xs sm:text-sm",
                         textClassName,
                     )}
                 >
