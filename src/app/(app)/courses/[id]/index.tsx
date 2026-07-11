@@ -40,7 +40,6 @@ export default function Page() {
           onBack={() => router.back()}
         />
       }
-      className="items-center"
       containerClassName="gap-4 pb-10 relative w-full flex-1"
       contentContainerClassName="flex flex-col gap-4 px-4 items-center"
     >

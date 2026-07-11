@@ -1,7 +1,6 @@
 import { Pressable, Text, View } from "react-native"
 import { cn } from '@/tw/util';
 import { ProgressBar } from "./progress-bar";
-import { Tag } from "./tag";
 import { Divider } from "./divider";
 import { Button } from "./button";
 import { apiClient } from "@/server/api/client";
@@ -43,21 +42,18 @@ export const UnitItem = (props: UnitItemProps) => {
             }
         >
             <View className="flex flex-2 flex-col justify-start">
-                <View className="flex flex-row items-center gap-2 mb-2">
-                    <Text className="shrink text-white text-xs xs:text-base sm:text-xl font-semibold">{unit.name}</Text>
-                    <Tag text={"level " + unit.level} />
-                </View>
+                <Text className="text-white text-xs xs:text-base sm:text-xl font-semibold mb-2">{unit.name}</Text>
                 <Text className="text-sm text-[#BAFFCA] mt-4">
                     {unit.description}
                 </Text>
             </View>
 
             <View className="flex flex-1 flex-col justify-center gap-4 items-center">
-                {!!props.onPress && <Button className="w-full" text={props.actionText ?? "practice"} onPress={onPress} />}
                 {typeof progress === "number" && <ProgressBar progress={progress} className="self-stretch mx-4" />}
                 {typeof progress === "undefined" && (
                     action
                 )}
+                {!!props.onPress && <Button className="w-full" text={props.actionText ?? "practice"} onPress={onPress} />}
             </View>
 
         </View>

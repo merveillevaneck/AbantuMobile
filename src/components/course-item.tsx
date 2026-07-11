@@ -1,12 +1,8 @@
-import { ActivityIndicator, Pressable, Text, View } from "react-native"
+import { Pressable, Text, View } from "react-native"
 import { cn } from '@/tw/util';
 import { ProgressBar } from "./progress-bar";
 import { ResponseOf } from "@/server/api/responses";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { subscribeToCourse, subscribeToCourseKey } from "@/server/subscribe-to-course";
 import { Button } from "./button";
-import { getAvailableCoursesKey } from "@/server/get-available-courses";
-import { myCoursesKey } from "@/server/get-my-courses";
 
 
 type Courses = ResponseOf<'getApicourses'>
@@ -27,57 +23,33 @@ export const CourseItem = (props: CourseItemProps) => {
         course,
         onPress: $onPress,
         progress,
-        action,
         subscribeable,
     } = props;
-
-    const queryClient = useQueryClient();
-    const { mutateAsync: sub, isPending } = useMutation({
-        mutationKey: subscribeToCourseKey,
-        mutationFn: subscribeToCourse,
-        onSuccess: async () => {
-            await Promise.all([
-                await queryClient.invalidateQueries({queryKey: getAvailableCoursesKey}),
-                await queryClient.invalidateQueries({queryKey: myCoursesKey})
-            ])
-            props.onSubscribe?.();
-        }
-    })
 
     const onPress = () => {
         $onPress?.(course);
     }
     return (
-        <Pressable
-            onPress={onPress}
+        <View
             className={cn(
-                "flex flex-col items-stretch rounded-4xl bg-[#399653] shadow-md p-4 px-8 active:opacity-60",
+                "flex flex-row items-stretch gap-4 rounded-4xl bg-[#399653] shadow-md p-4 px-8 relative",
                 className
             )}
         >
-            <View className="flex flex-row items-center justify-between mb-8">
-                <Text className="text-white text-2xl font-semibold flex-5">{course.name}</Text>
-                {!isPending && typeof progress === "number" && (
-                    <ProgressBar progress={0.5} className="flex-3" />
-                )}
-                {!isPending && !progress && subscribeable && !action && (
-                    <Button text="Subscribe" onPress={() => sub(course.id)} />
-                )}
-                {!isPending && !progress && !!action && typeof action !== "string" && (
-                    action
-                )}
-                {isPending && (
-                    <ActivityIndicator color="white" size={18} />
-                )}
-            </View>
-            <View className="flex flex-row items-center justify-between gap-4">
+            <View className="flex flex-2 flex-col justify-start">
+                <Text className="shrink text-white text-xs xs:text-base sm:text-xl font-semibold">{course.name}</Text>
                 {!!course.description && (
-                    <Text className="shrink text-[#BAFFCA] text-md">{course.description}</Text>
+                    <Text className="text-sm text-[#BAFFCA] mt-4">{course.description}</Text>
                 )}
                 {!!course.creator && (
-                    <Text className="shrink-0 text-[#BAFFCA] text-md">{course.creator?.firstname}</Text>
+                    <Text className="text-xs text-[#BAFFCA] mt-2">{course.creator?.firstname}</Text>
                 )}
             </View>
-        </Pressable>
+
+            <View className="flex flex-1 flex-col justify-center gap-4 items-center">
+                {typeof progress === "number" && <ProgressBar progress={progress} className="self-stretch mx-4" />}
+                <Button className="w-full" text={subscribeable ? "overview" : "view progress"} onPress={onPress} />
+            </View>
+        </View>
     )
 }
