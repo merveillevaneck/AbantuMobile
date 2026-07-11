@@ -1,8 +1,12 @@
-import { Pressable, Text, View } from "react-native"
+import { Text, View } from "react-native"
 import { cn } from '@/tw/util';
 import { ProgressBar } from "./progress-bar";
 import { ResponseOf } from "@/server/api/responses";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { subscribeToCourse, subscribeToCourseKey } from "@/server/subscribe-to-course";
 import { Button } from "./button";
+import { getAvailableCoursesKey } from "@/server/get-available-courses";
+import { myCoursesKey } from "@/server/get-my-courses";
 
 
 type Courses = ResponseOf<'getApicourses'>
@@ -26,6 +30,19 @@ export const CourseItem = (props: CourseItemProps) => {
         subscribeable,
     } = props;
 
+    const queryClient = useQueryClient();
+    const { mutateAsync: sub, isPending } = useMutation({
+        mutationKey: subscribeToCourseKey,
+        mutationFn: subscribeToCourse,
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({queryKey: getAvailableCoursesKey}),
+                queryClient.invalidateQueries({queryKey: myCoursesKey})
+            ])
+            props.onSubscribe?.();
+        }
+    })
+
     const onPress = () => {
         $onPress?.(course);
     }
@@ -48,7 +65,11 @@ export const CourseItem = (props: CourseItemProps) => {
 
             <View className="flex flex-1 flex-col justify-center gap-4 items-center">
                 {typeof progress === "number" && <ProgressBar progress={progress} className="self-stretch mx-4" />}
-                <Button className="w-full" text={subscribeable ? "overview" : "view progress"} onPress={onPress} />
+                {subscribeable ? (
+                    <Button className="w-full" text="Subscribe" isLoading={isPending} onPress={() => sub(course.id)} />
+                ) : (
+                    <Button className="w-full" text="view progress" onPress={onPress} />
+                )}
             </View>
         </View>
     )
