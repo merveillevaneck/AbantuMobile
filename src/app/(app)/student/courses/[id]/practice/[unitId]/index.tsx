@@ -49,7 +49,7 @@ export default function Page() {
             const result = await getUnitExercises(Number(unitId));
 
             const ids = result.flatMap(ex => ex.questionContent);
-            const sounds = await loadSoundBytes(ids);
+            const sounds = await loadSoundBytes(ids as string[]);
             setSounds(sounds);
 
             start(result);
@@ -248,8 +248,8 @@ const Question = (props: QuestionProps) => {
     const [containerWidth, setContainerWidth] = useState(0);
     const [dimensions, setDimensions] = useState<PillDimension[]>([]);
 
-    // useSoundByte(exercise.questionContent, { type: "wav", playOnMount: true });
-    useEffect(() => { playSound(exercise.questionContent); }, [exercise.questionContent]);
+    useSoundByte(exercise.questionContent!, { playOnMount: true });
+    // useEffect(() => { playSound(exercise.questionContent); }, [exercise.questionContent]);
 
 
     const selectedDims = selected.map(opt => dimensions.find(dim => dim.option.uuid === opt.uuid))
