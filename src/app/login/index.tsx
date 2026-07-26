@@ -36,10 +36,10 @@ export default function Login() {
             keyboardVerticalOffset={0}
         >
             <Pressable
-                className="flex-1"
+                className="flex-1 items-center"
                 onPress={() => KeyboardController.dismiss()}
             >
-                <View className="flex-1 px-6 pt-24 flex flex-col">
+                <View className="flex-1 w-full max-w-sm px-6 flex flex-col justify-center py-10">
                     <View className="flex flex-col gap-2 mb-12">
                         <Text className="text-[#BAFFCA] text-4xl font-bold">
                             Abantu
@@ -70,15 +70,15 @@ export default function Login() {
                             onSubmitEditing={onSubmit}
                         />
                     </View>
-                </View>
 
-                <View className="px-6 pb-10">
-                    <Button
-                        className="flex justify-center items-center"
-                        text="Log in"
-                        onPress={onSubmit}
-                        isLoading={isPending}
-                    />
+                    <View className="mt-8">
+                        <Button
+                            className="flex justify-center items-center"
+                            text="Log in"
+                            onPress={onSubmit}
+                            isLoading={isPending}
+                        />
+                    </View>
                 </View>
             </Pressable>
         </KeyboardAvoidingView>
