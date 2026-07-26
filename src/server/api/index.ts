@@ -6,3 +6,5 @@ export * from './get-course-units';
 export * from './remove-student-course';
 export * from './get-exercise-comments';
 export * from './create-comment';
+export * from './get-auth-jag';
+export * from './resolve-comment';

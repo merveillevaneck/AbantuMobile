@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { cn } from '@/tw/util';
 import { Button } from './button';
 import { Input } from './input';
-import { useCreateComment, useGetExerciseComments, getExerciseComments } from '@/server/api';
+import { useCreateComment, useGetExerciseComments, useGetApiAuthJag, useResolveComment, getExerciseComments } from '@/server/api';
 
 type Comment = Awaited<ReturnType<typeof getExerciseComments>>[number];
 
@@ -26,17 +26,48 @@ const displayName = (user?: { firstname?: string | null; lastname?: string | nul
     return full || user.email || 'Unknown';
 };
 
-const CommentItem = ({ comment }: { comment: Comment }) => (
-    <View className="px-5 py-3 border-b border-[#333435]">
-        <View className="flex flex-row justify-between items-center mb-1">
-            <Text className="text-[#BAFFCA] font-semibold" numberOfLines={1}>
-                {displayName(comment.user)}
-            </Text>
-            <Text className="text-[#BAFFCA]/50 text-xs">{formatTimestamp(comment.timestamp)}</Text>
+const CommentItem = ({ comment }: { comment: Comment }) => {
+    const { data: me } = useGetApiAuthJag();
+    const { mutateAsync: resolve, isPending } = useResolveComment();
+    const isAuthor = me?.id != null && me.id === comment.user?.id;
+    const isResolved = !!comment.resolved;
+
+    return (
+        <View className="px-5 py-3 border-b border-[#333435]">
+            <View className="flex flex-row gap-3 items-start">
+                <View className="flex-1 flex flex-col gap-1">
+                    <View className="flex flex-row items-center gap-2">
+                        <Text className="text-[#BAFFCA] font-semibold" numberOfLines={1}>
+                            {displayName(comment.user)}
+                        </Text>
+                        {isResolved && (
+                            <View className="bg-[#257560] rounded-full px-2 py-0.5">
+                                <Text className="text-white text-[10px] font-semibold">Resolved</Text>
+                            </View>
+                        )}
+                    </View>
+                    <Text className="text-white">{comment.text}</Text>
+                </View>
+                <View className="flex flex-col items-end gap-1">
+                    <Text className="text-[#BAFFCA]/50 text-xs">{formatTimestamp(comment.timestamp)}</Text>
+                    {isAuthor && !isResolved && (
+                        <Button
+                            text={
+                                <View className="flex flex-row items-center gap-1">
+                                    <Ionicons name="checkmark-circle-outline" size={14} color="white" />
+                                    <Text className="text-white font-semibold">Resolve</Text>
+                                </View>
+                            }
+                            className="bg-[#257560] px-2 py-1"
+                            isLoading={isPending}
+                            onPress={() => resolve(comment.id)}
+                        />
+                    )}
+                </View>
+            </View>
         </View>
-        <Text className="text-white">{comment.text}</Text>
-    </View>
-);
+    );
+};
 
 const AddCommentDialog = ({ visible, exerciseId, onClose }: { visible: boolean; exerciseId: number | null; onClose: () => void }) => {
     const [text, setText] = useState('');
@@ -113,13 +144,13 @@ export const ExerciseCommentsSheet = forwardRef<BottomSheet, ExerciseCommentsShe
                     backgroundStyle={{
                         flex: 1,
                         backgroundColor: '#232427',
-                        shadowColor: '#333435',
-                        shadowRadius: 0.5,
-                        shadowOpacity: 1,
+                        shadowColor: '#257560',
+                        shadowRadius: 3,
+                        shadowOpacity: 0.3,
                     }}
                     handleIndicatorStyle={{ backgroundColor: '#BAFFCA' }}
                 >
-                    <View className="flex flex-col" style={{ flex: 1 }}>
+                    <View className="flex flex-col lg:self-center lg:w-200" style={{ flex: 1 }}>
                         <View className="flex flex-row items-center justify-between px-5 pb-3 border-b border-[#333435]">
                             <Text className="text-white text-xl font-bold">Comments</Text>
                             <Button

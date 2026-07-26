@@ -163,9 +163,9 @@ export default function Page() {
                             backgroundColor: '#232427',
                             // borderTopColor: 'darkgray',
                             // borderTopWidth: 1,
-                            shadowColor: '#333435',
-                            shadowRadius: 0.5,
-                            shadowOpacity: 1
+                            shadowColor: '#257560',
+                            shadowRadius: 3,
+                            shadowOpacity: 0.3
                         }}
                         handleIndicatorStyle={{backgroundColor: 'transparent'}}
                         // snapPoints={[200]}
@@ -178,19 +178,19 @@ export default function Page() {
                                 flex: 1,
                                 justifyContent: 'flex-end',
                                 flexDirection: 'column',
-                                paddingBottom: 60,
+                                paddingBottom: 40,
                                 paddingTop: 20,
-                                paddingHorizontal: 20,
-                                gap: 30,
+                                paddingHorizontal: 40,
+                                gap: 50,
                             }}>
                                 <View className="flex flex-1 flex-col lg:self-center lg:w-200 items-stretch">
 
                             {submission?.correct && (
                                 <>
-                                    <Text className="text-4xl text-green-300 font-bold ml-2">Correct!</Text>
+                                    <Text className="text-4xl text-green-300 font-bold ml-2 mb-4">Correct!</Text>
                                     {/* TODO: add correct and incorrect hint text here! */}
                                     {!!current && current?.correctMessage && (
-                                        <Text className="text-2xl text-green-300 ml-2">{current?.correctMessage}</Text>
+                                        <Text className="text-xl text-green-300 ml-2">{current?.correctMessage}</Text>
                                     )}
                                 </>
                             )}
@@ -198,18 +198,18 @@ export default function Page() {
                                 <>
                                     <Text className="text-4xl font-bold text-red-300">Oops!</Text>
                                     {!!current && !!incorrectMessage && (
-                                        <View className="ml-2 gap-2">
+                                        <Text className="text-xl font-semibold text-green-200 my-4">
                                             {incorrectMessageIsGenerated && (
-                                                <Text className="text-2xl font-normal text-green-200">Answer</Text>
+                                                <Text className="text-gray-400 font-normal">Answer: </Text>
                                             )}
-                                            <Text className="text-2xl font-semibold text-green-200">{incorrectMessage}</Text>
-                                        </View>
+                                            {incorrectMessage}
+                                        </Text>
                                     )}
                                 </>
                             )}
                             <Button
                                 text={submission?.correct ? "Continue" : "Next Exercise"}
-                                className={cn(!!submission?.correct ? "bg-[#257560]" : "bg-red-400")}
+                                className={cn("mt-10", !!submission?.correct ? "bg-[#257560]" : "bg-red-400")}
                                 textClassName='text-2xl'
                                 onPress={async () => {
                                     sheet?.current?.close();
