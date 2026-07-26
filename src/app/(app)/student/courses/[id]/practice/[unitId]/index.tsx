@@ -14,6 +14,7 @@ import LottieView from 'lottie-react-native';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { cn } from '@/tw/util';
 import { PracticeSessionSummary } from '@/components/practice-session-summary';
+import { ExerciseCommentsSheet } from '@/components/exercise-comments-sheet';
 import { getUnitExercises } from '@/server/get-unit-exercises';
 import { Audio } from 'expo-av';
 import {  loadSoundBytes, Playable, playAudio, playBuffer, useSoundByte } from '@/hooks/use-soundbyte';
@@ -71,6 +72,7 @@ export default function Page() {
     }, [completed, exercises, current])
 
     const sheet = useRef<BottomSheet>(null);
+    const commentsSheet = useRef<BottomSheet>(null);
 
     const _handleBottomSheetChanges = (idx: number) => {
         console.log('sheet change to', idx);
@@ -137,7 +139,7 @@ export default function Page() {
                 // contentContainerClassName='flex-1 w-full'
                 className="bg-[#232427] flex-1 flex items-stretch flex-col lg-200"
             >
-                {!finished ? <PracticeSessionHeader className="lg:w-200 md:self-center m-4 p-2" progress={!finished ? progress : undefined} onBack={() => router.back()} /> : null}
+                {!finished ? <PracticeSessionHeader className="lg:w-200 md:self-center m-4 p-2" progress={!finished ? progress : undefined} onBack={() => router.back()} onComments={() => commentsSheet?.current?.expand()} /> : null}
                 <Animated.View
                     style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center'}}
                     entering={FadeIn}>
@@ -222,6 +224,8 @@ export default function Page() {
                     </BottomSheet>
 
                 )}
+
+                <ExerciseCommentsSheet ref={commentsSheet} exerciseId={current?.id ?? null} />
             </View>
     )
 }

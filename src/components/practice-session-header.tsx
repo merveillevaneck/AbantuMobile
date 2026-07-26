@@ -9,12 +9,13 @@ import { FontAwesome6 } from '@expo/vector-icons'
 type PracticeSessionHeaderProps = {
     progress?: number;
     onBack?: () => void;
+    onComments?: () => void;
     className?: string;
     hapticStyle?: typeof HapticStyle
 } & Omit<HapticPressableProps, 'children' | 'className'>;
 
 export const PracticeSessionHeader = (props: PracticeSessionHeaderProps) => {
-    const { progress, onBack, className } = props;
+    const { progress, onBack, onComments, className } = props;
 
     return ( 
         <View
@@ -31,6 +32,15 @@ export const PracticeSessionHeader = (props: PracticeSessionHeaderProps) => {
                 <FontAwesome6 name="x" color="white" size={24} />
             </HapticPressable>
             {progress !== undefined && <ProgressBar className="flex-1" progress={progress} />}
+            {!!onComments && (
+                <HapticPressable
+                    hapticStyle={HapticStyle.Light}
+                    onPress={() => onComments?.()}
+                    className="p-2 active:opacity-60"
+                >
+                    <Ionicons name="chatbubble-outline" color="white" size={24} />
+                </HapticPressable>
+            )}
         </View>
     )
 }

@@ -5,6 +5,7 @@ const postApiunitsIdexercises_Body = z.array(
   z.object({
     correctMessage: z.union([z.string(), z.null()]).optional(),
     incorrectMessage: z.union([z.string(), z.null()]).optional(),
+    level: z.union([z.number(), z.null()]).optional(),
     questionContent: z.string().optional(),
     answers: z
       .union([
@@ -112,6 +113,7 @@ const postApiexercisesId_Body = z
   .object({
     correctMessage: z.union([z.string(), z.null()]),
     incorrectMessage: z.union([z.string(), z.null()]),
+    level: z.union([z.number(), z.null()]),
     questionContent: z.union([z.string(), z.null()]),
     answers: z.union([
       z.array(
@@ -1220,6 +1222,7 @@ const endpoints = makeApi([
         })
       ),
       incorrectMessage: z.union([z.string(), z.null()]).optional(),
+      level: z.number().int(),
       questionContent: z.string().optional(),
       id: z.number().int(),
       answers: z.array(
@@ -1307,6 +1310,7 @@ const endpoints = makeApi([
         })
       ),
       incorrectMessage: z.union([z.string(), z.null()]).optional(),
+      level: z.number().int(),
       questionContent: z.string().optional(),
       id: z.number().int(),
       answers: z.array(
@@ -1346,6 +1350,66 @@ const endpoints = makeApi([
       },
     ],
     response: z.object({ message: z.string() }),
+    errors: [
+      {
+        status: 400,
+        schema: z.object({ message: z.string() }),
+      },
+    ],
+  },
+  {
+    method: "get",
+    path: "/api/exercises/:id/comments",
+    alias: "getApiexercisesIdcomments",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "id",
+        type: "Path",
+        schema: z.number().int(),
+      },
+    ],
+    response: z.array(
+      z.object({
+        exerciseId: z.number().int().optional(),
+        resolved: z.number().int(),
+        id: z.number().int(),
+        unitId: z.number().int().optional(),
+        resolvedBy: z
+          .union([
+            z.object({
+              role: z.string(),
+              archived: z.union([z.boolean(), z.null()]).optional(),
+              email: z.string(),
+              profileImage: z.union([z.string(), z.null()]).optional(),
+              lastname: z.union([z.string(), z.null()]).optional(),
+              approved: z.union([z.boolean(), z.null()]).optional(),
+              emailVerified: z.boolean().optional(),
+              firstname: z.union([z.string(), z.null()]).optional(),
+              id: z.number().int(),
+              mobile: z.union([z.string(), z.null()]).optional(),
+            }),
+            z.null(),
+          ])
+          .optional(),
+        timestamp: z.string(),
+        courseId: z.number().int().optional(),
+        user: z.object({
+          role: z.string(),
+          archived: z.union([z.boolean(), z.null()]).optional(),
+          email: z.string(),
+          profileImage: z.union([z.string(), z.null()]).optional(),
+          lastname: z.union([z.string(), z.null()]).optional(),
+          approved: z.union([z.boolean(), z.null()]).optional(),
+          emailVerified: z.boolean().optional(),
+          firstname: z.union([z.string(), z.null()]).optional(),
+          id: z.number().int(),
+          mobile: z.union([z.string(), z.null()]).optional(),
+        }),
+        resolvedAt: z.union([z.string(), z.null()]).optional(),
+        text: z.string(),
+      })
+    ),
     errors: [
       {
         status: 400,
@@ -1658,6 +1722,7 @@ const endpoints = makeApi([
             })
           ),
           incorrectMessage: z.union([z.string(), z.null()]).optional(),
+          level: z.number().int(),
           questionContent: z.string().optional(),
           id: z.number().int(),
           answers: z.array(
@@ -1884,6 +1949,7 @@ const endpoints = makeApi([
           })
         ),
         incorrectMessage: z.union([z.string(), z.null()]).optional(),
+        level: z.number().int(),
         questionContent: z.string().optional(),
         id: z.number().int(),
         answers: z.array(
