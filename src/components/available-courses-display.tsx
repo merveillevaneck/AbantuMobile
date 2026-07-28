@@ -55,7 +55,17 @@ export const AvailableCoursesDisplay = (props: AvailableCoursesDisplayProps) => 
             )}
         >
             <View className="w-full max-w-[500px] flex flex-col gap-8">
-                {groupCoursesByLanguage(courses).map(group => (
+                {groupCoursesByLanguage(courses).length === 0 ? (
+                    <View className="flex flex-col items-center justify-center gap-4 py-20">
+                        <Text className="text-white text-xl font-bold text-center">
+                            No courses available
+                        </Text>
+                        <Text className="text-white/70 text-center">
+                            There are no courses available to subscribe to right now. Check back later.
+                        </Text>
+                    </View>
+                ) : (
+                groupCoursesByLanguage(courses).map(group => (
                     <View key={group.language} className="flex flex-col items-stretch gap-4">
                         <Text className="text-white text-2xl font-bold">{group.language}</Text>
                         {group.courses.map(course => (
@@ -68,7 +78,8 @@ export const AvailableCoursesDisplay = (props: AvailableCoursesDisplayProps) => 
                             />
                         ))}
                     </View>
-                ))}
+                ))
+                )}
             </View>
         </ScrollView>
     )

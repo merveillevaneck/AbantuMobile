@@ -8,8 +8,10 @@ import { ExpoContextMenu } from '@appandflow/expo-context-menu'
 import { getApiStudentCoursesKey, useDeleteApiStudentCourse } from "@/server/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { removeStudentCourse, removeStudentCourseKey } from "@/server/remove-student-course";
+import { Button } from "@/components/button";
 import { getMyCourses, myCoursesKey } from "@/server/get-my-courses";
 import { getAvailableCoursesKey } from "@/server/get-available-courses";
+import { navigateToAvailableCourses } from "@/lib/navigation";
 
 const navigateToCourseSummary = (id: number) => {
     router.push(`/student/courses/${id}`)
@@ -55,7 +57,21 @@ export const MyCoursesDisplay = (props: MyCoursesDisplayProps) => {
             )}
         >
             <View className="w-full max-w-[500px] flex flex-col gap-8">
-                {groupCoursesByLanguage(courses).map(group => (
+                {groupCoursesByLanguage(courses).length === 0 ? (
+                    <View className="flex flex-col items-center justify-center gap-4 py-20">
+                        <Text className="text-white text-xl font-bold text-center">
+                            No courses yet
+                        </Text>
+                        <Text className="text-white/70 text-center">
+                            You're not subscribed to any courses. Browse available courses to get started.
+                        </Text>
+                        <Button
+                            text="Browse courses"
+                            onPress={navigateToAvailableCourses}
+                        />
+                    </View>
+                ) : (
+                groupCoursesByLanguage(courses).map(group => (
                     <View key={group.language} className="flex flex-col items-stretch gap-4">
                         <Text className="text-white text-2xl font-bold">{group.language}</Text>
                         {group.courses.map(course => (
@@ -76,7 +92,8 @@ export const MyCoursesDisplay = (props: MyCoursesDisplayProps) => {
                             </ExpoContextMenu>
                         ))}
                     </View>
-                ))}
+                ))
+                )}
             </View>
         </ScrollView>
     )

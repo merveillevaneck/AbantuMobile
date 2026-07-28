@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 
 import { CourseItem, Header, Screen } from "@/components";
@@ -8,12 +8,11 @@ import { Button } from "@/components/button";
 import { useTokenStore } from "@/store/token";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { MyCoursesDisplay } from "@/components/my-courses-display";
+import { MenuSheet } from "@/components/menu-sheet";
 import { useQuery } from "@tanstack/react-query";
 import { getMyCourses, myCoursesKey } from "@/server/get-my-courses";
-
-const navigateToAvailableCourses = () => {
-  router.push("/courses");
-}
+import { navigateToAvailableCourses } from "@/lib/navigation";
+import BottomSheet from "@gorhom/bottom-sheet";
 
 const navigateToLogin = () => {
   router.push("/login");
@@ -21,6 +20,8 @@ const navigateToLogin = () => {
 
 export default function Page() {
 
+  const menuSheetRef = useRef<BottomSheet>(null);
+  const openMenu = () => menuSheetRef.current?.expand();
 
   const { data, isPending, error } = useQuery({
     queryKey: myCoursesKey,
@@ -33,16 +34,17 @@ export default function Page() {
 
 
   if (isPending) return (
+    <>
     <Screen
       header={
         <Header
           title="My Courses"
           right={
             <Pressable
-              onPress={() => clear()}
+              onPress={openMenu}
               className="transition-transform duration-150 hover:scale-110 active:scale-95"
             >
-              <Ionicons name="log-out-outline" size={28} color="white" />
+              <Ionicons name="menu" size={28} color="white" />
             </Pressable>
           }
         />
@@ -52,19 +54,22 @@ export default function Page() {
       <ActivityIndicator color="green" size={32}  />
       <Text>hello</Text>
     </Screen>
+    <MenuSheet ref={menuSheetRef} />
+    </>
   )
 
   return (
+    <>
     <Screen
       header={
         <Header
           title="My Courses"
           right={
             <Pressable
-              onPress={() => clear()}
+              onPress={openMenu}
               className="transition-transform duration-150 hover:scale-110 active:scale-95"
             >
-              <Ionicons name="log-out-outline" size={28} color="white" />
+              <Ionicons name="menu" size={28} color="white" />
             </Pressable>
           }
         />
@@ -82,5 +87,7 @@ export default function Page() {
     >
       <MyCoursesDisplay courses={data} />
     </Screen>
+    <MenuSheet ref={menuSheetRef} />
+    </>
   );
 }

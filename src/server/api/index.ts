@@ -8,3 +8,5 @@ export * from './get-exercise-comments';
 export * from './create-comment';
 export * from './get-auth-jag';
 export * from './resolve-comment';
+export * from './session-start';
+export * from './session-end';

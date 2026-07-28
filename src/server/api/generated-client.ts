@@ -30,6 +30,21 @@ const postApiunitsIdexercises_Body = z.array(
     answerType: z.enum(["freetext", "bubbles"]).optional(),
   })
 );
+const type = z
+  .union([z.enum(["all", "resolved", "unresolved"]), z.null()])
+  .optional();
+const postApistudentsessionend_Body = z.object({
+  sessionId: z.number().int().optional(),
+  answers: z.array(
+    z.object({
+      exerciseId: z.number().int().optional(),
+      answer: z.union([z.array(z.string()), z.string()]),
+      correct: z.boolean(),
+      startedAt: z.string().optional(),
+      endedAt: z.string().optional(),
+    })
+  ),
+});
 const postApiauthlogin_Body = z.object({
   email: z.string(),
   password: z.string(),
@@ -77,7 +92,7 @@ const postApivocabId_Body = z
     type: z.union([z.string(), z.null()]),
   })
   .partial();
-const type = z.union([z.string(), z.null()]).optional();
+const type__2 = z.union([z.string(), z.null()]).optional();
 const postApivocab_Body = z.array(
   z.object({
     xhosa: z.string(),
@@ -87,17 +102,6 @@ const postApivocab_Body = z.array(
     type: z.string(),
   })
 );
-const postApistudentsessionendId_Body = z.object({
-  sessionId: z.number().int().optional(),
-  answers: z.array(
-    z.object({
-      exerciseId: z.number().int().optional(),
-      answer: z.union([z.array(z.string()), z.string()]),
-      startedAt: z.string().optional(),
-      endedAt: z.string().optional(),
-    })
-  ),
-});
 const postApiunitsId_Body = z
   .object({
     id: z.number().int(),
@@ -178,6 +182,8 @@ const postApiusersadd_Body = z.object({
 
 export const schemas = {
   postApiunitsIdexercises_Body,
+  type,
+  postApistudentsessionend_Body,
   postApiauthlogin_Body,
   postApiauthregisterstudent_Body,
   postApicommentscreate_Body,
@@ -186,9 +192,8 @@ export const schemas = {
   postApicoursesIdupdate_Body,
   postApiunitsIdexercisesmove_Body,
   postApivocabId_Body,
-  type,
+  type__2,
   postApivocab_Body,
-  postApistudentsessionendId_Body,
   postApiunitsId_Body,
   postApiexercisesId_Body,
   postApimediaaudio_Body,
@@ -418,6 +423,13 @@ const endpoints = makeApi([
     path: "/api/comments/all",
     alias: "getApicommentsall",
     requestFormat: "json",
+    parameters: [
+      {
+        name: "type",
+        type: "Query",
+        schema: type,
+      },
+    ],
     response: z.array(
       z.object({
         exerciseId: z.number().int().optional(),
@@ -459,6 +471,12 @@ const endpoints = makeApi([
         text: z.string(),
       })
     ),
+    errors: [
+      {
+        status: 400,
+        schema: z.object({ message: z.string() }),
+      },
+    ],
   },
   {
     method: "post",
@@ -1368,6 +1386,11 @@ const endpoints = makeApi([
         type: "Path",
         schema: z.number().int(),
       },
+      {
+        name: "type",
+        type: "Query",
+        schema: type,
+      },
     ],
     response: z.array(
       z.object({
@@ -1640,19 +1663,14 @@ const endpoints = makeApi([
   },
   {
     method: "post",
-    path: "/api/student/session/end/:id",
-    alias: "postApistudentsessionendId",
+    path: "/api/student/session/end",
+    alias: "postApistudentsessionend",
     requestFormat: "json",
     parameters: [
       {
         name: "body",
         type: "Body",
-        schema: postApistudentsessionendId_Body,
-      },
-      {
-        name: "id",
-        type: "Path",
-        schema: z.number().int(),
+        schema: postApistudentsessionend_Body,
       },
     ],
     response: z.object({ message: z.string() }),
@@ -1661,18 +1679,22 @@ const endpoints = makeApi([
         status: 400,
         schema: z.object({ message: z.string() }),
       },
+      {
+        status: 404,
+        schema: z.object({ message: z.string() }),
+      },
     ],
   },
   {
     method: "post",
-    path: "/api/student/session/start/:id",
-    alias: "postApistudentsessionstartId",
+    path: "/api/student/session/start",
+    alias: "postApistudentsessionstart",
     requestFormat: "json",
     parameters: [
       {
-        name: "id",
-        type: "Path",
-        schema: z.number().int(),
+        name: "body",
+        type: "Body",
+        schema: z.object({ unitId: z.number().int().optional() }),
       },
     ],
     response: z.object({
@@ -2156,12 +2178,12 @@ const endpoints = makeApi([
       {
         name: "type",
         type: "Query",
-        schema: type,
+        schema: type__2,
       },
       {
         name: "search",
         type: "Query",
-        schema: type,
+        schema: type__2,
       },
     ],
     response: z.array(
