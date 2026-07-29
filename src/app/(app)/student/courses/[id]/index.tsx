@@ -6,12 +6,7 @@ import { Header, Screen, UnitItem } from "@/components";
 import { router, useLocalSearchParams } from "expo-router";
 import { useGetApiStudentCourse } from "@/server/api";
 import { ExpoContextMenu } from '@appandflow/expo-context-menu';
-import { getUnitExercises } from "@/server/get-unit-exercises";
-import { useMutation } from "@tanstack/react-query";
-import { usePracticeStore } from "@/store/practice";
-
-const navigateToPracticeSession = (courseId: number, unitId: number) => router.push(`/student/courses/${courseId}/practice/${unitId}`)
-
+import { StartSessionButton } from "@/components/start-session-button";
 
 export default function Page() {
 
@@ -20,10 +15,6 @@ export default function Page() {
   const { data, isPending } = useGetApiStudentCourse({
       id: Number(id),
   })
-
-  const handlePractice = async (unit: (typeof data.units)[number]) => {
-    navigateToPracticeSession(Number(id), unit.id);
-  }
 
   if (isPending) return (
     <Screen
@@ -56,8 +47,8 @@ export default function Page() {
                 <UnitItem
                     unit={unit}
                     key={unit.id}
-                    progress={0.5}
-                    onPress={() => handlePractice(unit)}
+                    progress={unit.progress ?? 0}
+                    action={<StartSessionButton className="w-full" unitId={unit.id} courseId={Number(id)} unitType={unit.type} />}
                 />
             ))}
         </View>

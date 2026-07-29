@@ -1,21 +1,22 @@
 import { Screen, PracticeSessionHeader, Pill, HapticStyle } from '@/components';
 import { Button } from '@/components/button';
 import { Divider } from '@/components/divider';
-import { usePracticeStore } from '@/store/practice';
+import { usePracticeStore, type Exercise } from '@/store/practice';
+import { ProgressSummary } from '@/components/progress-summary';
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
 import * as _ from 'lodash';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, LinearTransition, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { apiClient } from '@/server/api/client';
+import { usePostApiStudentSessionEnd } from '@/server/api';
 import { useQuery } from '@tanstack/react-query';
 import LottieView from 'lottie-react-native';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { cn } from '@/tw/util';
 import { PracticeSessionSummary } from '@/components/practice-session-summary';
 import { ExerciseCommentsSheet } from '@/components/exercise-comments-sheet';
-import { getUnitExercises } from '@/server/get-unit-exercises';
 import { Audio } from 'expo-av';
 import {  loadSoundBytes, Playable, playAudio, playBuffer, useSoundByte } from '@/hooks/use-soundbyte';
 
@@ -38,26 +39,27 @@ export default function Page() {
     const [showLoading, setShowLoader] = useState(true);
     const animation = useRef<LottieView>(null);
 
-    const { start, complete, current, exercises, completed } = usePracticeStore();
+    const { complete, current, exercises, completed, sessionId, end, setSessionResult, lastSessionResult } = usePracticeStore();
 
-    const [submission, setSubmission] = useState<{correct: boolean, answer: string[]} | null>(null);
+    const [submission, setSubmission] = useState<{correct: boolean, answer: string[], endedAt: string} | null>(null);
     const [sounds, setSounds] = useState<Record<string, Playable>>({});
 
-    useQuery({
-        queryKey: ["exercises", unitId],
-        queryFn: async () => {
-            if (unitId === undefined) return;
-            const result = await getUnitExercises(Number(unitId));
+    const [showAbortDialog, setShowAbortDialog] = useState(false);
+    const { mutateAsync: endSession, isPending: isEnding } = usePostApiStudentSessionEnd();
 
-            const ids = result.flatMap(ex => ex.questionContent);
+    const allExercises = [...completed, ...(current ? [current] : []), ...exercises];
+    const ids = allExercises.flatMap(ex => ex.questionContent as string);
+
+    useQuery({
+        queryKey: ["session-audio", sessionId],
+        queryFn: async () => {
+            if (sessionId == null) return;
             const sounds = await loadSoundBytes(ids as string[]);
             setSounds(sounds);
-
-            start(result);
             setShowLoader(false);
-
-            return { result, sounds };
+            return sounds;
         },
+        enabled: sessionId != null,
         refetchOnWindowFocus: false,
     })
 
@@ -85,19 +87,42 @@ export default function Page() {
                 const bubbles = (answer?.text as string[])
                 if (_.isEqual(opts, bubbles)) match = true;
             })
-            console.log('match', match)
-                if (!match) {
-                    console.log('in match')
-                    setSubmission({correct: false, answer: opts});
-                    return sheet?.current?.expand();
-                }
-                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                void playCorrect();
-                //complete(true, opts);
-                setSubmission({correct: true, answer: opts})
+            const endedAt = new Date().toISOString();
+            if (!match) {
+                setSubmission({correct: false, answer: opts, endedAt});
                 return sheet?.current?.expand();
+            }
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            void playCorrect();
+            setSubmission({correct: true, answer: opts, endedAt})
+            return sheet?.current?.expand();
         }
     }
+
+    const abortSession = async () => {
+        setShowAbortDialog(false);
+        if (sessionId != null) {
+            await endSession({ sessionId, answers: [] });
+        }
+        end();
+        router.back();
+    };
+
+    const handleFinishSubmit = async () => {
+        if (sessionId != null) {
+            const res = await endSession({
+                sessionId,
+                answers: completed.map(c => ({
+                    exerciseId: c.id,
+                    answer: c.answer,
+                    correct: c.correct,
+                    startedAt: c.startedAt,
+                    endedAt: c.endedAt,
+                })),
+            });
+            setSessionResult(res);
+        }
+    };
 
     const finished = useMemo(() => !current && !!completed.length && !exercises.length, [current, completed, exercises]);
 
@@ -139,12 +164,15 @@ export default function Page() {
                 // contentContainerClassName='flex-1 w-full'
                 className="bg-[#232427] flex-1 flex items-stretch flex-col lg-200"
             >
-                {!finished ? <PracticeSessionHeader className="lg:w-200 md:self-center m-4 p-2" progress={!finished ? progress : undefined} onBack={() => router.back()} onComments={() => commentsSheet?.current?.expand()} /> : null}
+                {!finished ? <PracticeSessionHeader className="lg:w-200 md:self-center m-4 p-2" progress={!finished ? progress : undefined} onBack={() => setShowAbortDialog(true)} onComments={() => commentsSheet?.current?.expand()} /> : null}
                 <Animated.View
                     style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center'}}
                     entering={FadeIn}>
-                    {finished && (
-                        <PracticeSessionSummary completed={completed} onSubmit={() => router.back()} />
+                    {finished && !lastSessionResult && (
+                        <PracticeSessionSummary completed={completed} isSubmitting={isEnding} onSubmit={handleFinishSubmit} />
+                    )}
+                    {finished && lastSessionResult && (
+                        <ProgressSummary result={lastSessionResult} onDone={() => { end(); router.back(); }} />
                     )}
                     {/* <Text className="text-white">audio file log:</Text> */}
                     {/* {Object.keys(sounds).map(k => (
@@ -216,7 +244,7 @@ export default function Page() {
                                     await new Promise(resolve => setTimeout(() => resolve(true), 400));
                                     setSubmission(null);
                                     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                                    if (submission) complete(submission?.correct, submission?.answer);
+                                    if (submission) complete(submission?.correct, submission?.answer, submission?.endedAt);
                                 }}
                             />
                                 </View>
@@ -226,11 +254,24 @@ export default function Page() {
                 )}
 
                 <ExerciseCommentsSheet ref={commentsSheet} exerciseId={current?.id ?? null} />
+                <Modal transparent visible={showAbortDialog} animationType="fade" onRequestClose={() => setShowAbortDialog(false)}>
+                    <Pressable className="flex-1 bg-black/60 justify-center items-center px-6" onPress={() => setShowAbortDialog(false)}>
+                        <Pressable className="bg-[#232427] rounded-2xl p-5 w-full max-w-md gap-4" onPress={e => e.stopPropagation()}>
+                            <Text className="text-white text-xl font-bold">End session?</Text>
+                            <Text className="text-white/70">
+                                If you leave now, your progress in this session will be lost.
+                            </Text>
+                            <View className="flex flex-row gap-3 mt-2">
+                                <Button className="flex-1 bg-transparent border border-[#333435]" text="Cancel" onPress={() => setShowAbortDialog(false)} />
+                                <Button className="flex-1 bg-red-500" text="End session" isLoading={isEnding} onPress={abortSession} />
+                            </View>
+                        </Pressable>
+                    </Pressable>
+                </Modal>
             </View>
     )
 }
 
-type Exercise = Awaited<ReturnType<typeof getUnitExercises>>[number];
 type Option = Exercise['options'][number];
 type QuestionProps = {
     exercise: Exercise;
@@ -262,7 +303,7 @@ const Question = (props: QuestionProps) => {
 
     const selectedDims = selected.map(opt => dimensions.find(dim => dim.option.uuid === opt.uuid))
     return (
-        <View className="flex-1 flex-col items-stretch lg:self-center lg:200 lg:items-center p-10 pt-0">
+        <View className="flex-1 flex-col items-stretch lg:self-center lg:w-180 lg:items-stretch p-10 pt-0">
             <Animated.View
                 entering={FadeIn}
                 className="flex flex-1"
@@ -278,7 +319,7 @@ const Question = (props: QuestionProps) => {
                 </View>
                 <Divider className="opacity-30" />
                 <View className="flex flex-col items-stretch relative flex-1">
-                    <View className="flex flex-1 flex-row justify-center flex-wrap mt-10 gap-2 absolute top-0 left-0">
+                    <View className="flex flex-1 flex-row justify-center flex-wrap mt-10 gap-2 absolute top-0 left-0 right-0">
                         {exercise.options?.map((opt, idx) => (
                             <Pill
                                 textClassName="text-xl opacity-0"
@@ -289,7 +330,7 @@ const Question = (props: QuestionProps) => {
                         ))}
                     </View>
                     <View
-                        className="flex flex-row flex-1 justify-center flex-wrap mt-10 gap-2 absolute top-0 left-0"
+                        className="flex flex-row flex-1 justify-center flex-wrap mt-10 gap-2 absolute top-0 left-0 right-0"
                         onLayout={e => setContainerWidth(e.nativeEvent.layout.width)}>
                         {exercise.options?.map((opt, idx) => (
                             <HoverPill
@@ -316,8 +357,8 @@ const Question = (props: QuestionProps) => {
                     </View>
                 </View>
             </Animated.View>
-            <View className="items-stretch justify-center p-4 pb-1">
-                <Button text="Check" textClassName='text-2xl' onPress={() => onSubmit(selected.map(s => s.text))}  />
+            <View className="items-stretch justify-center pb-4">
+                <Button className="w-full" text="Check" textClassName='text-2xl' onPress={() => onSubmit(selected.map(s => s.text))}  />
             </View>
         </View>
     )

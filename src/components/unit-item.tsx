@@ -50,10 +50,7 @@ export const UnitItem = (props: UnitItemProps) => {
 
             <View className="flex flex-1 flex-col justify-center gap-4 items-center">
                 {typeof progress === "number" && <ProgressBar progress={progress} className="self-stretch mx-4" />}
-                {typeof progress === "undefined" && (
-                    action
-                )}
-                {!!props.onPress && <Button className="w-full" text={props.actionText ?? "practice"} onPress={onPress} />}
+                {action ?? (!!props.onPress && <Button className="w-full" text={props.actionText ?? "practice"} onPress={onPress} />)}
             </View>
 
         </View>

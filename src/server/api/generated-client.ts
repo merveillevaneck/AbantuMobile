@@ -111,6 +111,7 @@ const postApiunitsId_Body = z
     type: z.enum(["lesson", "practice"]),
     position: z.number().int(),
     level: z.number().int(),
+    progress: z.union([z.number(), z.null()]),
   })
   .partial();
 const postApiexercisesId_Body = z
@@ -574,6 +575,7 @@ const endpoints = makeApi([
             type: z.enum(["lesson", "practice"]),
             position: z.number().int(),
             level: z.number().int(),
+            progress: z.union([z.number(), z.null()]).optional(),
           })
         ),
         reviewPending: z.union([z.boolean(), z.null()]).optional(),
@@ -631,6 +633,7 @@ const endpoints = makeApi([
           type: z.enum(["lesson", "practice"]),
           position: z.number().int(),
           level: z.number().int(),
+          progress: z.union([z.number(), z.null()]).optional(),
         })
       ),
       reviewPending: z.union([z.boolean(), z.null()]).optional(),
@@ -687,6 +690,7 @@ const endpoints = makeApi([
           type: z.enum(["lesson", "practice"]),
           position: z.number().int(),
           level: z.number().int(),
+          progress: z.union([z.number(), z.null()]).optional(),
         })
       ),
       reviewPending: z.union([z.boolean(), z.null()]).optional(),
@@ -783,6 +787,7 @@ const endpoints = makeApi([
           type: z.enum(["lesson", "practice"]),
           position: z.number().int(),
           level: z.number().int(),
+          progress: z.union([z.number(), z.null()]).optional(),
         })
       ),
       reviewPending: z.union([z.boolean(), z.null()]).optional(),
@@ -843,6 +848,7 @@ const endpoints = makeApi([
           type: z.enum(["lesson", "practice"]),
           position: z.number().int(),
           level: z.number().int(),
+          progress: z.union([z.number(), z.null()]).optional(),
         })
       ),
       reviewPending: z.union([z.boolean(), z.null()]).optional(),
@@ -903,6 +909,7 @@ const endpoints = makeApi([
           type: z.enum(["lesson", "practice"]),
           position: z.number().int(),
           level: z.number().int(),
+          progress: z.union([z.number(), z.null()]).optional(),
         })
       ),
       reviewPending: z.union([z.boolean(), z.null()]).optional(),
@@ -977,6 +984,7 @@ const endpoints = makeApi([
         type: z.enum(["lesson", "practice"]),
         position: z.number().int(),
         level: z.number().int(),
+        progress: z.union([z.number(), z.null()]).optional(),
       })
     ),
     errors: [
@@ -1014,6 +1022,7 @@ const endpoints = makeApi([
           type: z.enum(["lesson", "practice"]),
           position: z.number().int(),
           level: z.number().int(),
+          progress: z.union([z.number(), z.null()]).optional(),
         })
       ),
     }),
@@ -1098,6 +1107,7 @@ const endpoints = makeApi([
           type: z.enum(["lesson", "practice"]),
           position: z.number().int(),
           level: z.number().int(),
+          progress: z.union([z.number(), z.null()]).optional(),
         })
       ),
       reviewPending: z.union([z.boolean(), z.null()]).optional(),
@@ -1554,6 +1564,7 @@ const endpoints = makeApi([
             type: z.enum(["lesson", "practice"]),
             position: z.number().int(),
             level: z.number().int(),
+            progress: z.union([z.number(), z.null()]).optional(),
           })
         ),
         reviewPending: z.union([z.boolean(), z.null()]).optional(),
@@ -1605,6 +1616,7 @@ const endpoints = makeApi([
           type: z.enum(["lesson", "practice"]),
           position: z.number().int(),
           level: z.number().int(),
+          progress: z.union([z.number(), z.null()]).optional(),
         })
       ),
       reviewPending: z.union([z.boolean(), z.null()]).optional(),
@@ -1673,7 +1685,13 @@ const endpoints = makeApi([
         schema: postApistudentsessionend_Body,
       },
     ],
-    response: z.object({ message: z.string() }),
+    response: z.object({
+      newProgress: z.number().optional(),
+      hasPreviousSession: z.boolean().optional(),
+      mistakesDiff: z.number().int().optional(),
+      correctDiff: z.number().int().optional(),
+      timeDiff: z.number().int().optional(),
+    }),
     errors: [
       {
         status: 400,
@@ -1812,6 +1830,7 @@ const endpoints = makeApi([
             type: z.enum(["lesson", "practice"]),
             position: z.number().int(),
             level: z.number().int(),
+            progress: z.union([z.number(), z.null()]).optional(),
           })
         ),
         reviewPending: z.union([z.boolean(), z.null()]).optional(),
@@ -1839,6 +1858,7 @@ const endpoints = makeApi([
       type: z.enum(["lesson", "practice"]),
       position: z.number().int(),
       level: z.number().int(),
+      progress: z.union([z.number(), z.null()]).optional(),
     }),
     errors: [
       {
@@ -1879,6 +1899,7 @@ const endpoints = makeApi([
       type: z.enum(["lesson", "practice"]),
       position: z.number().int(),
       level: z.number().int(),
+      progress: z.union([z.number(), z.null()]).optional(),
     }),
     errors: [
       {

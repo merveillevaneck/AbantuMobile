@@ -10,7 +10,7 @@ type Response = ResponseOf<"postApistudentsessionend">;
 
 export const postApiStudentSessionEndKey = () => ["PostApiStudentSessionEnd"];
 export const postApiStudentSessionEnd = async (opts: Params): Promise<Response> =>
-  await apiClient.postApistudentsessionend({ body: opts });
+  await apiClient.postApistudentsessionend(opts);
 
 export const usePostApiStudentSessionEnd = () =>
   useMutation({

@@ -7,7 +7,7 @@ type Response = ResponseOf<"postApistudentsessionstart">;
 
 export const postApiStudentSessionStartKey = () => ["PostApiStudentSessionStart"];
 export const postApiStudentSessionStart = async (opts: Params): Promise<Response> =>
-  await apiClient.postApistudentsessionstart({ body: opts });
+  await apiClient.postApistudentsessionstart(opts);
 
 export const usePostApiStudentSessionStart = () =>
   useMutation({
