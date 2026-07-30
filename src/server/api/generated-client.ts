@@ -563,6 +563,7 @@ const endpoints = makeApi([
           ])
           .optional(),
         name: z.string(),
+        overallProgress: z.union([z.number(), z.null()]).optional(),
         language: z.string(),
         id: z.number().int(),
         publishable: z.boolean(),
@@ -621,6 +622,7 @@ const endpoints = makeApi([
         ])
         .optional(),
       name: z.string(),
+      overallProgress: z.union([z.number(), z.null()]).optional(),
       language: z.string(),
       id: z.number().int(),
       publishable: z.boolean(),
@@ -678,6 +680,7 @@ const endpoints = makeApi([
         ])
         .optional(),
       name: z.string(),
+      overallProgress: z.union([z.number(), z.null()]).optional(),
       language: z.string(),
       id: z.number().int(),
       publishable: z.boolean(),
@@ -775,6 +778,7 @@ const endpoints = makeApi([
         ])
         .optional(),
       name: z.string(),
+      overallProgress: z.union([z.number(), z.null()]).optional(),
       language: z.string(),
       id: z.number().int(),
       publishable: z.boolean(),
@@ -836,6 +840,7 @@ const endpoints = makeApi([
         ])
         .optional(),
       name: z.string(),
+      overallProgress: z.union([z.number(), z.null()]).optional(),
       language: z.string(),
       id: z.number().int(),
       publishable: z.boolean(),
@@ -897,6 +902,7 @@ const endpoints = makeApi([
         ])
         .optional(),
       name: z.string(),
+      overallProgress: z.union([z.number(), z.null()]).optional(),
       language: z.string(),
       id: z.number().int(),
       publishable: z.boolean(),
@@ -1095,6 +1101,7 @@ const endpoints = makeApi([
         ])
         .optional(),
       name: z.string(),
+      overallProgress: z.union([z.number(), z.null()]).optional(),
       language: z.string(),
       id: z.number().int(),
       publishable: z.boolean(),
@@ -1552,6 +1559,7 @@ const endpoints = makeApi([
           ])
           .optional(),
         name: z.string(),
+        overallProgress: z.union([z.number(), z.null()]).optional(),
         language: z.string(),
         id: z.number().int(),
         publishable: z.boolean(),
@@ -1604,6 +1612,7 @@ const endpoints = makeApi([
         ])
         .optional(),
       name: z.string(),
+      overallProgress: z.union([z.number(), z.null()]).optional(),
       language: z.string(),
       id: z.number().int(),
       publishable: z.boolean(),
@@ -1818,6 +1827,7 @@ const endpoints = makeApi([
           ])
           .optional(),
         name: z.string(),
+        overallProgress: z.union([z.number(), z.null()]).optional(),
         language: z.string(),
         id: z.number().int(),
         publishable: z.boolean(),

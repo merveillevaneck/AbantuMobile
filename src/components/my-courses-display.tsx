@@ -87,7 +87,7 @@ export const MyCoursesDisplay = (props: MyCoursesDisplayProps) => {
                                 <CourseItem
                                     course={course}
                                     onPress={() => navigateToCourseSummary(course.id)}
-                                    progress={0.5}
+                                    progress={course.overallProgress ?? undefined}
                                 />
                             </ExpoContextMenu>
                         ))}
